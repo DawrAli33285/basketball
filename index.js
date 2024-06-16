@@ -12,6 +12,13 @@ const bodyParser=require('body-parser')
 const coachRoutes=require('./routes/coach/coach')
 //middlewares
 app.use(cors())
+app.use(express.json({
+    verify: (req, res, buffer) => req['rawBody'] = buffer, 
+  }));
+  
+app.use(express.urlencoded({
+    extended: true
+    }));
 
 
 
