@@ -10,12 +10,19 @@ module.exports.register=async(req,res)=>{
 let {email,password,firstName,lastName,phoneNumber}=req.body;
     try{
 
+
 let alreadyExists=await authModel.findOne({email})
 if(alreadyExists){
     return res.status(400).json({
     error:"Email already exists"
     })
 }
+if(email.length==0 || password.length==0 || firstName.length==0 || phoneNumber.length==0 || lastName.length==0){
+  return res.status(400).json({
+    message:"Please provide email,password,firstName,lastName,phoneNumber"
+  })
+}
+
 let hashedPassword=await bcrypt.hash(password,10)
 
 let jwtToken=await jwt.sign({email,password:hashedPassword,firstName,lastName,phoneNumber},process.env.JWT_TOKEN,{expiresIn:'15m'})

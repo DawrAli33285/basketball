@@ -22,6 +22,11 @@ app.use(express.urlencoded({
 
 
 //routes
+app.get('/',()=>{
+    return res.status(200).json({
+        message:"SUCCESS"
+    })
+})
 app.use(authRoutes)
 app.use(profileRoutes)
 app.use(newsFeedRoutes)
