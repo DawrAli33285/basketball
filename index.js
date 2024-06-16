@@ -8,17 +8,18 @@ const authRoutes=require('./routes/auth/auth')
 const profileRoutes=require('./routes/profile/profile')
 const newsFeedRoutes=require('./routes/news feed/newsFeed')
 const videoRoutes=require('./routes/video/video')
+const bodyParser=require('body-parser')
 const coachRoutes=require('./routes/coach/coach')
 //middlewares
 app.use(cors())
-app.use(express.json({
-    verify: (req, res, buffer) => req['rawBody'] = buffer, 
-  }));
+// app.use(express.json({
+//     verify: (req, res, buffer) => req['rawBody'] = buffer, 
+//   }));
   
-app.use(express.urlencoded({
-    extended: true
-    }));
-
+// app.use(express.urlencoded({
+//     extended: true
+//     }));
+app.use(bodyParser.json()); app.use(bodyParser.urlencoded({ extended: true }));
 
 
 //routes
