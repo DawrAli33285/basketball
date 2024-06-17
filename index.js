@@ -8,9 +8,9 @@ const authRoutes=require('./routes/auth/auth')
 const profileRoutes=require('./routes/profile/profile')
 const newsFeedRoutes=require('./routes/news feed/newsFeed')
 const videoRoutes=require('./routes/video/video')
-const bodyParser=require('body-parser')
+
 const coachRoutes=require('./routes/coach/coach')
-const serverless = require("serverless-http");
+
 //middlewares
 // app.use(cors())
 app.use(cors())
