@@ -7,8 +7,6 @@ const uri = 'mongodb+srv://lemightyeagle:lemightyeagle@cluster0.7b9t5dx.mongodb.
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true, // optional, but recommended
-  useFindAndModify: false // optional, if you are using findOneAndUpdate or findOneAndDelete etc.
 };
 
 // Connect to MongoDB Atlas
