@@ -12,7 +12,21 @@ const bodyParser=require('body-parser')
 const coachRoutes=require('./routes/coach/coach')
 const serverless = require("serverless-http");
 //middlewares
+// app.use(cors())
 app.use(cors())
+app.options('*',cors({
+    origin:'*', 
+    credentials:true,
+    methods:['POST','GET','DELETE','UPDATE'],            
+    optionSuccessStatus:200
+}))
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
+});
 app.use(express.json({
     verify: (req, res, buffer) => req['rawBody'] = buffer, 
   }));
