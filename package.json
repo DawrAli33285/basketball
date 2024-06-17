@@ -21,12 +21,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "nodemon ./index.js",
-      "vercel-build": "npm rebuild bcrypt --build-from-source",
     "build": "netlify deploy --prod"
   },
-  "vercel": {
-  "build": "npm run vercel-build"
-},
+
   "keywords": [],
   "author": "",
   "license": "ISC",
