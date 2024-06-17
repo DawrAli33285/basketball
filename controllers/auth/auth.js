@@ -1,7 +1,7 @@
 //imports
 const authModel=require('../../models/auth/auth')
 const jwt=require('jsonwebtoken')
-const bcrypt=require('bcrypt')
+// const bcrypt=require('bcrypt')
 const nodemailer=require('nodemailer')
 
 
@@ -23,9 +23,9 @@ if(email.length==0 || password.length==0 || firstName.length==0 || phoneNumber.l
   })
 }
 
-let hashedPassword=await bcrypt.hash(password,10)
+// let hashedPassword=await bcrypt.hash(password,10)
 
-let jwtToken=await jwt.sign({email,password:hashedPassword,firstName,lastName,phoneNumber},process.env.JWT_TOKEN,{expiresIn:'15m'})
+let jwtToken=await jwt.sign({email,password,firstName,lastName,phoneNumber},process.env.JWT_TOKEN,{expiresIn:'15m'})
 const emailHtmlContent = `
 <!DOCTYPE html>
 <html>
@@ -158,7 +158,8 @@ return res.status(400).json({
 })
 }
 emailFound=emailFound.toObject();
-let passwordMatch=await bcrypt.compare(password,emailFound.password)
+// let passwordMatch=await bcrypt.compare(password,emailFound.password)
+let passwordMatch=emailFound.password==password?true:false
 if(passwordMatch){
  let token=await jwt.sign(emailFound,process.env.JWT_TOKEN)
  let userData={
