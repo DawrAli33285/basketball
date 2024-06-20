@@ -8,7 +8,7 @@ const authRoutes=require('./routes/auth/auth')
 const profileRoutes=require('./routes/profile/profile')
 const newsFeedRoutes=require('./routes/news feed/newsFeed')
 const videoRoutes=require('./routes/video/video')
-
+const subscriptionRoutes=require('./routes/subscriptions/subscriptions')
 const coachRoutes=require('./routes/coach/coach')
 
 //middlewares
@@ -56,6 +56,7 @@ app.use(profileRoutes)
 app.use(newsFeedRoutes)
 app.use(videoRoutes)
 app.use(coachRoutes)
+app.use(subscriptionRoutes)
 //mongodb connection
 connection
 

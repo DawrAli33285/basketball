@@ -1,5 +1,5 @@
 const router=require('express').Router();
-const {createProfile,getProfile,deleteProfile}=require('../../controllers/profile/profile')
+const {createProfile,getProfile,deleteProfile,contactUs,getPlayer,getHomeData}=require('../../controllers/profile/profile')
 const {authenticate}=require('../../middleware/authentication')
 const {multerStorage}=require('../../utils/multer')
 router.post('/create-profile',authenticate,multerStorage.fields([
@@ -10,5 +10,7 @@ router.post('/create-profile',authenticate,multerStorage.fields([
 
 router.get('/get-profile/:id',getProfile)
 router.delete('/delete-profile/:id',deleteProfile)
-
+router.get('/getPlayer',getPlayer)
+router.get('/getHomeData',getHomeData)
+router.post('/contactUs',contactUs)
 module.exports=router;

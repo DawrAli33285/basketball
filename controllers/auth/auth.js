@@ -77,7 +77,7 @@ const emailHtmlContent = `
   </div>
   <div>
    <p>Please click on the link to verify email</p>
-   <a href="http://localhost:5000/verify/${jwtToken}">http://localhost:5000/verify/${jwtToken}</a>
+   <a href="https://dawar.vercel.app/verify/${jwtToken}">https://dawar.vercel.app/verify/${jwtToken}</a>
   </div>
 </div>
 

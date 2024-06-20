@@ -4,6 +4,8 @@ const playerModel = require('../../models/player/player');
 const videoModel=require('../../models/video/video')
 const newsFeedModel=require('../../models/news feed/newsFeed')
 const { cloudinaryUpload } = require('../../utils/cloudinary');
+const mailgun = require('mailgun.js');
+
 const path = require('path');
 const fs = require('fs');
 
@@ -153,9 +155,13 @@ module.exports.getProfile = async (req, res) => {
         })
         .populate('auth')
         .populate('coach');
-     
+        let players=await playerModel.find({}).populate('institute').populate('auth')
+  
 let videoData=await videoModel.find({featuredPlayer:id})
-let newsFeedData=await newsFeedModel.find({})
+console.log(id)
+let newsFeedData = await newsFeedModel.find({});
+newsFeedData=newsFeedData.filter(u=>u?.featuredPlayers?.find(u=>u==id))
+
 
       if (!profile) {
         return res.status(404).json({
@@ -218,7 +224,8 @@ let newsFeedData=await newsFeedModel.find({})
   newprofile.stats.push(careerStats)
 profile=newprofile
       return res.status(200).json({
-        profile
+        profile,
+        players
       });
   
     } catch (e) {
@@ -242,4 +249,150 @@ module.exports.deleteProfile=async(req,res)=>{
             error: 'Server error. Please retry.'
         });
     }
+}
+module.exports.getPlayer = async (req, res) => {
+  try {
+    // Fetch players and populate required fields
+    let players = await playerModel.find({}).populate('institute').populate('auth');
+
+    // Fetch all profiles
+    let profiles = await profileModel.find({});
+
+    // Create a map for quick lookup of profiles by auth ID
+    let profileMap = new Map();
+    profiles.forEach(profile => {
+      profileMap.set(profile.auth.toString(), profile);
+    });
+
+    // Add offers to each player
+    players = players.map(player => {
+      const playerAuthId = player.auth._id.toString();
+      if (profileMap.has(playerAuthId)) {
+        player = player.toObject(); // Convert to plain object to modify
+        player.offers = profileMap.get(playerAuthId).offers || [];
+      } else {
+        player.offers = [];
+      }
+      return player;
+    });
+
+    return res.status(200).json({
+      players
+    });
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: 'Server error. Please retry.'
+    });
+  }
+};
+
+module.exports.getHomeData=async(req,res)=>{
+  try{
+let videosData=await videoModel.find({}).limit(9)
+let newsFeedData=await newsFeedModel.find({}).limit(3)
+let playersData=await playerModel.find({}).limit(6).populate('auth')
+let classPlayers=await playerModel.find({class:'2024'}).limit(6).populate('auth')
+return res.status(200).json({
+ videosData,
+ newsFeedData,
+ playersData,
+ classPlayers
+
+})
+  }catch(e){
+    console.log(e.message);
+    return res.status(500).json({
+      error: 'Server error. Please retry.'
+    });
+  }
+}
+
+
+module.exports.contactUs=async(req,res)=>{
+let {name,email,message}=req.body;
+  try{
+    const emailHtmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+  .header {
+    color: #333;
+    text-align: center;
+  }
+  .review {
+    background-color: #f9f9f9;
+    border-left: 4px solid #007BFF;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 4px;
+  }
+  .rating {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff9500;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h2>User message by ${name}</h2>
+  </div>
+
+  <div>
+  <p>${message}</p>
+  </div>
+</div>
+
+</body>
+</html>
+`;
+const DOMAIN = "sandboxea8015a234134c3e893de2a00954455a.mailgun.org";
+const mg = mailgun({apiKey: "6fafb9bf-eb6cd277", domain: DOMAIN});
+const data = {
+from: "shahg33285@gmail.com",
+to: email,
+subject: "Contact Us",
+html:emailHtmlContent
+};
+mg.messages().send(data,async function (error, body) {
+  console.log(body);
+  if(!error){
+  await contactusmodel.findByIdAndUpdate(id,{
+      status:"answered"
+  })
+  return res.status(200).json({
+      message:'sucess'
+  })
+  }else{
+  console.log(error)
+  return res.status(400).json({
+      message:error
+  })
+  }
+  });
+}catch(e){
+  console.log(e.message);
+  return res.status(500).json({
+    error: 'Server error. Please retry.'
+  });
+}
 }

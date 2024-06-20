@@ -1,5 +1,6 @@
 
 let newsFeedModel=require('../../models/news feed/newsFeed')
+const playerModel = require('../../models/player/player')
 const {cloudinaryUpload}=require('../../utils/cloudinary')
 const fs=require('fs')
 const path=require('path')
@@ -57,5 +58,32 @@ return res.status(200).json({
     }
 }
 
+
+module.exports.getSingleNewsFeed=async(req,res)=>{
+   let {id}=req.params
+
+    try{
+        let newsFeed=await newsFeedModel.findOne({_id:id}).populate('featuredPlayers')
+        let players=[];
+        for(let i=0;i<newsFeed.featuredPlayers.length;i++){
+            let player=await playerModel.findOne({auth:newsFeed.featuredPlayers[i]?._id})
+            players.push(player)
+        }
+        newsFeed=newsFeed.toObject();
+       newsFeed={
+...newsFeed,
+players
+
+       }
+        return res.status(200).json({
+            newsFeed,
+        })
+    }catch(e){
+        console.log(e.message)
+        return res.status(400).json({
+           error:"Server error please retry"
+        })
+    }
+}
 
 
