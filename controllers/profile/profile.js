@@ -170,13 +170,12 @@ module.exports.createProfile = async (req, res) => {
   coach = coach?.length > 0 ? JSON.parse(coach) : ``;
 
   if (images.length > 0 || logos.length > 0) {
-    const imagesPath =path.join(__dirname, '..', '..', 'videos');
-      
+    const imagesPath = "/tmp/public/files/images";
     const files = [...images, ...logos];
     let filesPaths = files.map((val) => path.join(imagesPath, val.originalname));
 
     if (!fs.existsSync(imagesPath)) {
-      fs.mkdirSync(imagesPath);
+      fs.mkdirSync(imagesPath,{recursive:true});
     }
 
     files.forEach((val, i) => {
@@ -199,13 +198,12 @@ module.exports.createProfile = async (req, res) => {
   const picture = req.files['picture'] || null;
   let pictureUrl = null;
   if (picture) {
-    const photosDir = path.join(__dirname, '..', '..', 'videos');
-      
+    const photosDir = "/tmp/public/files/photos";
     const photofileName = `${Date.now()}-${picture[0].originalname}`;
     const photofile = path.join(photosDir, photofileName);
 
     if (!fs.existsSync(photosDir)) {
-      fs.mkdirSync(photosDir);
+      fs.mkdirSync(photosDir,{recursive:true});
     }
 
     fs.writeFileSync(photofile, picture[0].buffer);
