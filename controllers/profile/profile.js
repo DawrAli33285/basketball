@@ -170,7 +170,8 @@ module.exports.createProfile = async (req, res) => {
   coach = coach?.length > 0 ? JSON.parse(coach) : ``;
 
   if (images.length > 0 || logos.length > 0) {
-    const imagesPath = "/tmp/public/files/images";
+    const imagesPath =path.join(__dirname, '..', '..', 'videos');
+      
     const files = [...images, ...logos];
     let filesPaths = files.map((val) => path.join(imagesPath, val.originalname));
 
@@ -198,7 +199,8 @@ module.exports.createProfile = async (req, res) => {
   const picture = req.files['picture'] || null;
   let pictureUrl = null;
   if (picture) {
-    const photosDir = "/tmp/public/files/photos";
+    const photosDir = path.join(__dirname, '..', '..', 'videos');
+      
     const photofileName = `${Date.now()}-${picture[0].originalname}`;
     const photofile = path.join(photosDir, photofileName);
 
