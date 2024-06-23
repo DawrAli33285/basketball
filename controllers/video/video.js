@@ -77,3 +77,33 @@ return res.status(200).json({
         });
     }
   }
+
+
+  module.exports.flagVideo=async(req,res)=>{
+let {id}=req.params;
+    try{
+      let alreadyFlagged=await videoModel.findOne({_id:id,flaggedBy:{$all:[req.user._id]}})
+      if(alreadyFlagged){
+        await videoModel.findByIdAndUpdate(id,{
+          $pull:{flaggedBy:req.user._id}
+        })
+        return res.status(200).json({
+          message:'Unflagged sucessfully'
+        })
+      }else{
+        await videoModel.findByIdAndUpdate(id,{
+          $push:{flaggedBy:req.user._id}
+        })
+        return res.status(200).json({
+          message:'flagged sucessfully'
+        })
+      }
+
+
+    }catch(e){
+      console.log(e.message);
+      return res.status(500).json({
+        error: 'Server error, please try again'
+      });
+    }
+  }

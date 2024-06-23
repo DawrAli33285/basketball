@@ -183,3 +183,114 @@ return res.status(400).json({
     })
   }
 }
+module.exports.forgetPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const userExists = await authModel.findOne({ email });
+    if (!userExists) {
+      return res.status(400).json({ error: 'User does not exist' });
+    }
+
+    const token = jwt.sign({ id: userExists._id }, process.env.JWT_TOKEN, { expiresIn: '1h' });
+    const emailHtmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+  .header {
+    color: #333;
+    text-align: center;
+  }
+  .review {
+    background-color: #f9f9f9;
+    border-left: 4px solid #007BFF;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 4px;
+  }
+  .rating {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff9500;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h2>Password Reset Request</h2>
+  </div>
+  <div class="review">
+    <p>Hello,</p>
+    <p>You requested a password reset. Please click on the link below to reset your password:</p>
+  </div>
+  <div>
+   <p><a href="http://localhost:5173/change-password/${token}">Reset Password</a></p>
+  </div>
+</div>
+
+</body>
+</html>
+`;
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.USER_EMAIL,
+        pass: process.env.PASS_EMAIL,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.USER_EMAIL,
+      to: email,
+      subject: 'Reset Password',
+      html: emailHtmlContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ message: 'Email sent successfully' });
+  } catch (e) {
+    console.error('Error:', e.message);
+    return res.status(500).json({ error: 'Server error. Please retry.' });
+  }
+};
+
+
+
+
+module.exports.changePassword=async(req,res)=>{
+ let {password,token}=req.body;
+
+  try{
+    let userData=await jwt.verify(token,process.env.JWT_TOKEN)
+ 
+    await authModel.findByIdAndUpdate(userData.id,{
+      password:password
+    })
+return res.status(200).json({
+  message:"Password changed sucessfully"
+})
+  }catch(e){
+    console.error('Error:', e.message);
+    return res.status(500).json({ error: 'Server error. Please retry.' });
+  }
+}

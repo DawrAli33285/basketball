@@ -8,139 +8,413 @@ const mailgun = require('mailgun.js');
 
 const path = require('path');
 const fs = require('fs');
+const mailmodel = require('../../models/mail/mail');
+const coachModel = require('../../models/coach/coach');
 
+
+// module.exports.createProfile = async (req, res) => {
+//     let { about, phoneNumber,jerseyNumber,birthPlace, starRating, athleticaccomplishments, name, location, position, height, weight, offers, coach, socialLinks, stats, academics, playerClass, universityName } = req.body;
+
+//     const images = req.files['images'] || [];
+//     const logos=req.files['logo']
+//     let imagesUrls = [];
+//     let logoUrls=[]
+//     if (images.length > 0) {
+//         const imagesPath = "/tmp/public/files/images"
+//         let imagesFiles = images.map((val) => path.join(imagesPath, val.originalname));
+//         let logoFiles=logos.map((val)=>path.join(imagesPath,val.originalname))
+//         if (!fs.existsSync(imagesPath)) {
+//             fs.mkdirSync(imagesPath);
+//         }
+
+//         logos.forEach((val,i)=>{
+//           fs.writeFileSync(logoFiles[i],val.buffer)
+//         })
+//         images.forEach((val, i) => {
+//             fs.writeFileSync(imagesFiles[i], val.buffer);
+//         });
+
+//         const imageUploadPromises = imagesFiles.map((file) => cloudinaryUpload(file));
+//         const logoUploadPromises=logoFiles.map((file)=>cloudinaryUpload(file))
+
+//         const imageUploads = await Promise.all(imageUploadPromises);
+//         const logoUploads = await Promise.all(logoUploadPromises);
+//         imagesUrls = imageUploads.map((upload) => upload.url);
+//         logoUrls=logoUploads.map((upload)=>upload.url)
+//         images.forEach((val, i) => {
+//             fs.unlinkSync(imagesFiles[i], val.buffer);
+//         });
+//     }
+
+//     const picture = req.files['picture'] || null;
+//     let pictureUrl = null;
+//     if (picture) {
+//         const photosDir = "/tmp/public/files/photos"
+//         const originalPhotoName = picture[0].originalname;
+//         const photofileName = `${Date.now()}-${originalPhotoName}`;
+//         const photofile = path.join(photosDir, photofileName);
+
+//         if (!fs.existsSync(photosDir)) {
+//             fs.mkdirSync(photosDir);
+//         }
+
+//         fs.writeFileSync(photofile, picture[0].buffer);
+
+//         const photoUpload = await cloudinaryUpload(photofile);
+//         pictureUrl = photoUpload.url;
+//         fs.unlinkSync(photofile)
+//     }
+
+//     try {
+//         // Convert academics string to JSON object
+//         academics = JSON.parse(academics);
+
+//         // Convert offers string to JSON array
+//         offers = JSON.parse(offers);
+//         offers = offers.map((offer, index) => ({
+//           ...offer,
+//           logo: logoUrls[index] || null
+//       }));
+//         // Assuming universityName is used to create a university first
+//         const university = await universityModel.create({
+//             universityName
+//         });
+
+//         try {
+//             // Create player using the created university's _id
+//             const player = await playerModel.create({
+//                 auth: req.user._id,
+//                 picture: pictureUrl,
+//                 name,
+//                 location,
+//                 position,
+//                 height,
+//                 weight,
+//                 institute: university._id, // use university._id because create() expects an array
+//                 class: playerClass,
+//                 jerseyNumber,
+//                 birthPlace
+//             });
+
+//             try {
+//                 // Create profile linked to the created player
+//                 const profile = await profileModel.create({
+//                     auth: req.user._id,
+//                     about,
+//                     player: player._id,
+//                     phoneNumber,
+//                     starRating,
+//                     athleticaccomplishments,
+//                     socialLinks,
+//                     stats,
+//                     coach,
+//                     offers,
+//                     academics,
+//                     photos: imagesUrls,
+//                 });
+
+//                 return res.status(200).json({
+//                     message: 'Profile created successfully',
+//                 });
+//             } catch (profileError) {
+//                 // Delete player and university if creating profile fails
+//                 await playerModel.findByIdAndDelete(player._id);
+//                 await universityModel.findByIdAndDelete(university._id);
+//                 console.error(profileError.message);
+//                 return res.status(500).json({
+//                     error: 'Server error. Please retry.'
+//                 });
+//             }
+//         } catch (playerError) {
+//             // Delete university if creating player fails
+//             await universityModel.findByIdAndDelete(university._id);
+//             console.error(playerError.message);
+//             return res.status(500).json({
+//                 error: 'Server error. Please retry.'
+//             });
+//         }
+//     } catch (universityError) {
+//         console.error(universityError.message);
+//         return res.status(500).json({
+//             error: 'Server error. Please retry.'
+//         });
+//     }
+// };
 
 module.exports.createProfile = async (req, res) => {
-    let { about, phoneNumber,jerseyNumber,birthPlace, starRating, athleticaccomplishments, name, location, position, height, weight, offers, coach, socialLinks, stats, academics, playerClass, universityName } = req.body;
+  let {
+    about,
+    phoneNumber,
+    jerseyNumber,
+    birthPlace,
+    starRating,
+    athleticaccomplishments,
+    name,
+    location,
+    position,
+    height,
+    weight,
+    offers,
+    coach,
+    socialLinks,
+    stats,
+    academics,
+    playerClass,
+    universityName
+  } = req.body;
 
-    const images = req.files['images'] || [];
-    const logos=req.files['logo']
-    let imagesUrls = [];
-    let logoUrls=[]
-    if (images.length > 0) {
-        const imagesPath = "/tmp/public/files/images"
-        let imagesFiles = images.map((val) => path.join(imagesPath, val.originalname));
-        let logoFiles=logos.map((val)=>path.join(imagesPath,val.originalname))
-        if (!fs.existsSync(imagesPath)) {
-            fs.mkdirSync(imagesPath);
-        }
+  const images = req.files['images'] || [];
+  const logos = req.files['logo'] || [];
+  let imagesUrls = [];
+  let logoUrls = [];
+  coach = coach?.length > 0 ? JSON.parse(coach) : ``;
 
-        logos.forEach((val,i)=>{
-          fs.writeFileSync(logoFiles[i],val.buffer)
-        })
-        images.forEach((val, i) => {
-            fs.writeFileSync(imagesFiles[i], val.buffer);
-        });
+  if (images.length > 0 || logos.length > 0) {
+    const imagesPath = "/tmp/public/files/images";
+    const files = [...images, ...logos];
+    let filesPaths = files.map((val) => path.join(imagesPath, val.originalname));
 
-        const imageUploadPromises = imagesFiles.map((file) => cloudinaryUpload(file));
-        const logoUploadPromises=logoFiles.map((file)=>cloudinaryUpload(file))
-
-        const imageUploads = await Promise.all(imageUploadPromises);
-        const logoUploads = await Promise.all(logoUploadPromises);
-        imagesUrls = imageUploads.map((upload) => upload.url);
-        logoUrls=logoUploads.map((upload)=>upload.url)
-        images.forEach((val, i) => {
-            fs.unlinkSync(imagesFiles[i], val.buffer);
-        });
+    if (!fs.existsSync(imagesPath)) {
+      fs.mkdirSync(imagesPath);
     }
 
-    const picture = req.files['picture'] || null;
-    let pictureUrl = null;
-    if (picture) {
-        const photosDir = "/tmp/public/files/photos"
-        const originalPhotoName = picture[0].originalname;
-        const photofileName = `${Date.now()}-${originalPhotoName}`;
-        const photofile = path.join(photosDir, photofileName);
+    files.forEach((val, i) => {
+      fs.writeFileSync(filesPaths[i], val.buffer);
+    });
 
-        if (!fs.existsSync(photosDir)) {
-            fs.mkdirSync(photosDir);
-        }
+    const imageUploadPromises = images.map((file) => cloudinaryUpload(path.join(imagesPath, file.originalname)));
+    const logoUploadPromises = logos.map((file) => cloudinaryUpload(path.join(imagesPath, file.originalname)));
 
-        fs.writeFileSync(photofile, picture[0].buffer);
+    const imageUploads = await Promise.all(imageUploadPromises);
+    const logoUploads = await Promise.all(logoUploadPromises);
+    imagesUrls = imageUploads.map((upload) => upload.url);
+    logoUrls = logoUploads.map((upload) => upload.url);
 
-        const photoUpload = await cloudinaryUpload(photofile);
-        pictureUrl = photoUpload.url;
-        fs.unlinkSync(photofile)
+    files.forEach((val, i) => {
+      // fs.unlinkSync(filesPaths[i], val.buffer);
+    });
+  }
+
+  const picture = req.files['picture'] || null;
+  let pictureUrl = null;
+  if (picture) {
+    const photosDir = "/tmp/public/files/photos";
+    const photofileName = `${Date.now()}-${picture[0].originalname}`;
+    const photofile = path.join(photosDir, photofileName);
+
+    if (!fs.existsSync(photosDir)) {
+      fs.mkdirSync(photosDir);
     }
 
-    try {
-        // Convert academics string to JSON object
-        academics = JSON.parse(academics);
+    fs.writeFileSync(photofile, picture[0].buffer);
+    const photoUpload = await cloudinaryUpload(photofile);
+    pictureUrl = photoUpload.url;
+    // fs.unlinkSync(photofile);
+  }
 
-        // Convert offers string to JSON array
-        offers = JSON.parse(offers);
-        offers = offers.map((offer, index) => ({
-          ...offer,
-          logo: logoUrls[index] || null
-      }));
-        // Assuming universityName is used to create a university first
-        const university = await universityModel.create({
-            universityName
+  try {
+    // Ensure academics, offers, socialLinks, and stats are objects
+    academics = academics ? (typeof academics === 'string' ? JSON.parse(academics) : academics) : {};
+    offers = offers ? (typeof offers === 'string' ? JSON.parse(offers) : offers) : [];
+    socialLinks = socialLinks ? (typeof socialLinks === 'string' ? JSON.parse(socialLinks) : socialLinks) : [];
+    stats = stats ? (typeof stats === 'string' ? JSON.parse(stats) : stats) : {};
+
+    offers = offers.map((offer, index) => ({
+      ...offer,
+      logo: logoUrls[index] || offer.logo || null
+    }));
+
+    // Check if profile exists
+    let profile = await profileModel.findOne({ auth: req.user._id }).populate('player');
+
+    if (profile) {
+      // Update existing university
+      if (universityName) {
+        await universityModel.updateOne({ _id: profile.player.institute }, { $set: { universityName } });
+      }
+
+      // Update existing player
+      const playerUpdateFields = {};
+      if (name) playerUpdateFields.name = name;
+      if (location) playerUpdateFields.location = location;
+      if (position) playerUpdateFields.position = position;
+      if (height) playerUpdateFields.height = height;
+      if (weight) playerUpdateFields.weight = weight;
+      if (playerClass) playerUpdateFields.class = playerClass;
+      if (jerseyNumber) playerUpdateFields.jerseyNumber = jerseyNumber;
+      if (birthPlace) playerUpdateFields.birthPlace = birthPlace;
+      if (pictureUrl) playerUpdateFields.picture = pictureUrl;
+
+      // Use the current player fields if the new fields are not provided
+      const currentPlayer = await playerModel.findById(profile.player._id);
+      Object.keys(playerUpdateFields).forEach(key => {
+        if (!playerUpdateFields[key]) {
+          playerUpdateFields[key] = currentPlayer[key];
+        }
+      });
+
+      await playerModel.updateOne({ _id: profile.player._id }, { $set: playerUpdateFields });
+
+      // Update existing profile
+      const profileUpdateFields = {};
+      if (about) profileUpdateFields.about = about;
+      if (phoneNumber) profileUpdateFields.phoneNumber = phoneNumber;
+      if (starRating) profileUpdateFields.starRating = starRating;
+      if (athleticaccomplishments) profileUpdateFields.athleticaccomplishments = athleticaccomplishments;
+      if (stats) profileUpdateFields.stats = stats;
+      if (offers[0]?.type?.length > 0) profileUpdateFields.offers = offers;
+      if (academics.gpa.length > 0) profileUpdateFields.academics = academics;
+      if (imagesUrls.length > 0) profileUpdateFields.photos = imagesUrls;
+
+      // Handle coach update
+      if (coach) {
+        const existingCoaches = await coachModel.find({ auth: req.user._id });
+        let coachData = []; // Initialize coachData as an array
+      
+        for (let i = 0; i < coach.length; i++) {
+          let data = {}; // Initialize data object for each coach
+      
+          if (coach[i].name) data.name = coach[i].name;
+          if (coach[i].phoneNumber) data.phone = coach[i].phoneNumber; // Corrected to use phoneNumber
+          if (coach[i].email) data.email = coach[i].email;
+          if (coach[i].coachProgram) data.coachProgram = coach[i].coachProgram;
+      
+          coachData.push(data); // Push the populated data object into coachData array
+        }
+      
+        // Update each existing coach with respective data
+        for (let i = 0; i < existingCoaches.length; i++) {
+          await coachModel.updateOne({ _id: existingCoaches[i]._id }, { $set: coachData[i] });
+        }
+      }
+      
+
+      // Update socialLinks
+      if (socialLinks && socialLinks.length > 0) {
+     if(profile.socialLinks){
+      let newsocialLinks=[]
+      let facebooklink=profile.socialLinks.find(u=>u.social_type=="facebook")
+      let socialfacebooklink=socialLinks.find(u=>u.social_type=="facebook")
+      facebooklink.link=socialfacebooklink.link
+      let instagramlink=profile.socialLinks.find(u=>u.social_type=="instagram")
+      let socialinstagramlink=socialLinks.find(u=>u.social_type=="instagram")
+      instagramlink.link=socialinstagramlink.link
+      let twitterlink=profile.socialLinks.find(u=>u.social_type=="twitter")
+      let socialtwitterlink=socialLinks.find(u=>u.social_type=="twitter")
+      twitterlink.link=socialtwitterlink.link
+      let tiktoklink=profile.socialLinks.find(u=>u.social_type=="tiktok")
+      let socialtiktoklink=socialLinks.find(u=>u.social_type=="tiktok")
+      tiktoklink.link=socialtiktoklink.link
+      newsocialLinks.push(facebooklink,twitterlink,instagramlink,tiktoklink)
+      profileUpdateFields.socialLinks=newsocialLinks
+     }else{
+      const currentSocialLinks = profile.socialLinks || [];
+      const updatedSocialLinks = currentSocialLinks.map(currentLink => {
+        const newLink = socialLinks.find(link => link.social_type === currentLink.social_type);
+        return newLink ? { ...currentLink, link: newLink.link || currentLink.link } : currentLink;
+      });
+
+      socialLinks.forEach(newLink => {
+        if (!updatedSocialLinks.some(link => link.social_type === newLink.social_type)) {
+          updatedSocialLinks.push(newLink);
+        }
+      });
+       profileUpdateFields.socialLinks = updatedSocialLinks;
+     }
+
+       
+      }
+
+      await profileModel.updateOne({ auth: req.user._id }, { $set: profileUpdateFields });
+
+      return res.status(200).json({
+        message: 'Profile updated successfully',
+      });
+    } else {
+      // Assuming universityName is used to create a university first
+      const university = await universityModel.create({ universityName });
+
+      try {
+        // Create player using the created university's _id
+        const player = await playerModel.create({
+          auth: req.user._id,
+          picture: pictureUrl,
+          name,
+          location,
+          position,
+          height,
+          weight,
+          institute: university._id,
+          class: playerClass,
+          jerseyNumber,
+          birthPlace
         });
 
         try {
-            // Create player using the created university's _id
-            const player = await playerModel.create({
-                auth: req.user._id,
-                picture: pictureUrl,
-                name,
-                location,
-                position,
-                height,
-                weight,
-                institute: university._id, // use university._id because create() expects an array
-                class: playerClass,
-                jerseyNumber,
-                birthPlace
+       
+          // let coachData=await coach.map(async (data, index) => {
+          //     await coachModel.create({
+          //       name: data.name,
+          //       phone: data.phoneNumber,
+          //       email: data.email,
+          //       coachProgram: data.role,
+          //       auth: req.user._id
+          //     });
+          //   });
+         let coachfinal=await coachModel.create({
+              name: coach[0].name,
+              phone: coach[0].phoneNumber,
+              email: coach[0].email,
+              coachProgram: coach[0].role,
+              auth: req.user._id
             });
+          // Create profile linked to the created player
+          profile = await profileModel.create({
+            auth: req.user._id,
+            about,
+            player: player._id,
+            phoneNumber,
+            starRating,
+            athleticaccomplishments,
+            socialLinks,
+            stats,
+            coach:coachfinal._id,
+            offers,
+            academics,
+            photos: imagesUrls,
+          });
 
-            try {
-                // Create profile linked to the created player
-                const profile = await profileModel.create({
-                    auth: req.user._id,
-                    about,
-                    player: player._id,
-                    phoneNumber,
-                    starRating,
-                    athleticaccomplishments,
-                    socialLinks,
-                    stats,
-                    coach,
-                    offers,
-                    academics,
-                    photos: imagesUrls,
-                });
+          // Create coaches
+ 
 
-                return res.status(200).json({
-                    message: 'Profile created successfully',
-                });
-            } catch (profileError) {
-                // Delete player and university if creating profile fails
-                await playerModel.findByIdAndDelete(player._id);
-                await universityModel.findByIdAndDelete(university._id);
-                console.error(profileError.message);
-                return res.status(500).json({
-                    error: 'Server error. Please retry.'
-                });
-            }
-        } catch (playerError) {
-            // Delete university if creating player fails
-            await universityModel.findByIdAndDelete(university._id);
-            console.error(playerError.message);
-            return res.status(500).json({
-                error: 'Server error. Please retry.'
-            });
-        }
-    } catch (universityError) {
-        console.error(universityError.message);
-        return res.status(500).json({
+          return res.status(200).json({
+            message: 'Profile created successfully',
+          });
+        } catch (profileError) {
+          // Delete player and university if creating profile fails
+          await playerModel.findByIdAndDelete(player._id);
+          await universityModel.findByIdAndDelete(university._id);
+          console.error(profileError.message);
+          return res.status(500).json({
             error: 'Server error. Please retry.'
+          });
+        }
+      } catch (playerError) {
+        // Delete university if creating player fails
+        await universityModel.findByIdAndDelete(university._id);
+        console.error(playerError.message);
+        return res.status(500).json({
+          error: 'Server error. Please retry.'
         });
+      }
     }
+  } catch (universityError) {
+    console.error(universityError.message);
+    return res.status(500).json({
+      error: 'Server error. Please retry.'
+    });
+  }
 };
-
-
-
 module.exports.getProfile = async (req, res) => {
     const { id } = req.params;
   
@@ -155,10 +429,10 @@ module.exports.getProfile = async (req, res) => {
         })
         .populate('auth')
         .populate('coach');
-        let players=await playerModel.find({}).populate('institute').populate('auth')
-  
+        let players=await playerModel.find({auth:profile.auth}).populate('institute').populate('auth')
+  let showPlayers=await playerModel.find({auth:{$ne:id}}).populate('institute').populate('auth')
 let videoData=await videoModel.find({featuredPlayer:id})
-console.log(id)
+
 let newsFeedData = await newsFeedModel.find({});
 newsFeedData=newsFeedData.filter(u=>u?.featuredPlayers?.find(u=>u==id))
 
@@ -225,7 +499,8 @@ newsFeedData=newsFeedData.filter(u=>u?.featuredPlayers?.find(u=>u==id))
 profile=newprofile
       return res.status(200).json({
         profile,
-        players
+        players,
+        showPlayers
       });
   
     } catch (e) {
@@ -311,6 +586,7 @@ return res.status(200).json({
 
 module.exports.contactUs=async(req,res)=>{
 let {name,email,message}=req.body;
+console.log(name)
   try{
     const emailHtmlContent = `
 <!DOCTYPE html>
@@ -365,8 +641,9 @@ let {name,email,message}=req.body;
 </body>
 </html>
 `;
-const DOMAIN = "sandboxea8015a234134c3e893de2a00954455a.mailgun.org";
-const mg = mailgun({apiKey: "6fafb9bf-eb6cd277", domain: DOMAIN});
+const DOMAIN = "sandbox6a6c1146404048379fe04e593d00be67.mailgun.org";
+const mg = mailgun({apiKey: "fb6c7a836dd23a28c5fc1dde55a1a060-408f32f3-f5c88aff", domain: DOMAIN});
+
 const data = {
 from: "shahg33285@gmail.com",
 to: email,
@@ -376,14 +653,14 @@ html:emailHtmlContent
 mg.messages().send(data,async function (error, body) {
   console.log(body);
   if(!error){
-  await contactusmodel.findByIdAndUpdate(id,{
-      status:"answered"
-  })
+    console.log("SUCESS")
+
   return res.status(200).json({
       message:'sucess'
   })
-  }else{
-  console.log(error)
+  }
+  if(error){
+    console.log(error)
   return res.status(400).json({
       message:error
   })
@@ -395,4 +672,77 @@ mg.messages().send(data,async function (error, body) {
     error: 'Server error. Please retry.'
   });
 }
+
+
 }
+
+module.exports.subscribeMail=async(req,res)=>{
+  let {email}=req.body;
+
+
+  try{
+let alreadyExists=await mailmodel.find({subscribedBy:{$all:[email]}})
+
+if(alreadyExists.length>0){
+  return res.status(400).json({
+    error:"Already subscribed"
+  })
+}
+let finddata=await mailmodel.find({})
+if(finddata.length>0){
+
+  await mailmodel.updateOne({},{$push:{subscribedBy:email}})
+}else{
+  await mailmodel.create({
+    subscribedBy:email
+  })
+}
+
+return res.status(200).json({
+  message:"Subscribed successfully"
+})
+  }catch(e){
+    console.log(e.message);
+    return res.status(500).json({
+      error: 'Server error. Please retry.'
+    });
+  }
+}
+
+
+module.exports.flagProfile = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const alreadyFlagged = await profileModel.findOne({
+      auth: id,
+      flaggedBy: req.user._id
+    });
+
+    if (alreadyFlagged) {
+      console.log("UNFLAG");
+      await profileModel.updateOne(
+        { auth: id },
+        { $pull: { flaggedBy: req.user._id } }
+      );
+      return res.status(200).json({
+        message: "Profile unflagged successfully"
+      });
+    }
+
+    console.log("FLAG");
+    await profileModel.updateOne(
+      { auth: id },
+      { $push: { flaggedBy: req.user._id } }
+    );
+    return res.status(200).json({
+      message: "Profile flagged successfully"
+    });
+
+  } catch (e) {
+    console.log(e.message);
+    return res.status(500).json({
+      error: 'Server error. Please retry.'
+    });
+  }
+};

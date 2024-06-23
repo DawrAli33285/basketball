@@ -27,6 +27,14 @@ const videoSchema=mongoose.Schema({
                 ref:'auth'
             }
             ]
+    },
+    flaggedBy:{
+        type:[
+            {
+                type:mongoose.Schema.ObjectId,
+                ref:'auth'
+            }
+        ]
     }
 },{timestamps:true})
 

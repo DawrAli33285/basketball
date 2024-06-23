@@ -31,52 +31,40 @@ photos:{
 stats:{
 type:[{
 stats:{
-    type:String,
-    required:true
+    type:String
 },
 gp:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 fg:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 threep:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 ft:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 reb:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 ast:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 blk:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 stl:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 pf:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 to:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 },
 pts:{
-    type:mongoose.Schema.Types.BigInt,
-    required:true
+    type:mongoose.Schema.Types.BigInt
 }
 }]
 
@@ -109,6 +97,14 @@ type:[
 videos:{
     type:mongoose.Schema.ObjectId,
     ref:'video'
+},
+flaggedBy:{
+    type:[
+    {
+        type:mongoose.Schema.ObjectId,
+        ref:'auth'
+    }
+    ]
 },
 academics:{
     type:[{

@@ -11,7 +11,7 @@ starRating:{
 },
 picture:{
     type:String,
-    required:true
+    default:'https://images.stockcake.com/public/d/7/8/d78cebaa-ab71-4582-a26f-5481a0cd71a4_large/intense-basketball-play-stockcake.jpg'
 },
 
 institute:{
@@ -45,6 +45,9 @@ jerseyNumber:{
 birthPlace:{
     type:String,
     required:true
+},
+remarks:{
+    type:String,
 }
 },{timestamps:true})
 

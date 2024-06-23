@@ -10,7 +10,7 @@ const newsFeedRoutes=require('./routes/news feed/newsFeed')
 const videoRoutes=require('./routes/video/video')
 const subscriptionRoutes=require('./routes/subscriptions/subscriptions')
 const coachRoutes=require('./routes/coach/coach')
-
+const avalabilityPlayers=require('./routes/avalability players/avalabilityPlayers')
 //middlewares
 // app.use(cors())
 app.use(cors())
@@ -57,6 +57,7 @@ app.use(newsFeedRoutes)
 app.use(videoRoutes)
 app.use(coachRoutes)
 app.use(subscriptionRoutes)
+app.use(avalabilityPlayers)
 //mongodb connection
 connection
 

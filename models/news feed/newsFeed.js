@@ -19,6 +19,10 @@ const newsFeedSchema=mongoose.Schema({
         banner:{
             type:String,
             required:true
+        },
+        type:{
+type:String,
+default:'topnews'
         }
 },{timestamps:true})
 
