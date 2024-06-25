@@ -1,6 +1,7 @@
 const jwt=require('jsonwebtoken')
 const authmodel=require('../models/auth/auth')
 module.exports.authenticate=async(req,res,next)=>{
+ 
 let {authorization}=req.headers;
 if(!authorization){
     return res.status(400).json({

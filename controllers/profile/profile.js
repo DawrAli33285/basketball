@@ -11,6 +11,7 @@ const fs = require('fs');
 const mailmodel = require('../../models/mail/mail');
 const coachModel = require('../../models/coach/coach');
 const contactusmodel = require('../../models/contactus/contactus');
+const authmodel = require('../../models/auth/auth');
 
 
 // module.exports.createProfile = async (req, res) => {
@@ -171,7 +172,7 @@ module.exports.createProfile = async (req, res) => {
 
   coach = coach?.length > 0 ? JSON.parse(coach) : ``;
   if (images.length > 0 ) {
-    console.log("HERE")
+   
     const imagesPath = "/tmp/public/files/images";
     const files = [...images];
     let filesPaths = files.map((val) => path.join(imagesPath, val.originalname));
@@ -305,8 +306,16 @@ if(coach.type)data.type=coach.type
       
 
       // Update socialLinks
+
+      let number=socialLinks?.find(u=>u?.social_type=="phoneNumber")
+     socialLinks=socialLinks?.filter(u=>u?.social_type!="phoneNumber")
+      if(number){
+        await authmodel.updateOne({_id:req.user._id},{$set:{phoneNumber:number.link}})
+      }
+
+  
       if (socialLinks && socialLinks.length > 0) {
-      
+     
      if(profile.socialLinks){
       let newsocialLinks=[]
       let facebooklink=profile?.socialLinks?.find(u=>u?.social_type=="facebook")
@@ -315,7 +324,7 @@ if(coach.type)data.type=coach.type
 
 
        facebooklink={
-        ...facebooklink,
+      
         link:socialfacebooklink?.link,
         social_type:"facebook"
        }
@@ -326,7 +335,7 @@ if(coach.type)data.type=coach.type
      if(socialinstagramlink && socialinstagramlink?.link){
  
       instagramlink={
-        ...instagramlink,
+    
         link:socialinstagramlink?.link,
         social_type:"instagram"
       }
@@ -336,23 +345,24 @@ if(coach.type)data.type=coach.type
       let socialtwitterlink=socialLinks?.find(u=>u?.social_type=="twitter")
      if(socialtwitterlink && socialtwitterlink?.link){
 twitterlink={
-  ...twitterlink,
+
   link:socialtwitterlink?.link,
 social_type:"twitter"
 }
      }
       
+ 
       let tiktoklink=profile?.socialLinks?.find(u=>u?.social_type=="tiktok")
       let socialtiktoklink=socialLinks?.find(u=>u?.social_type=="tiktok")
      
       if(socialtiktoklink && socialtiktoklink?.link){
         tiktoklink={
-          ...tiktoklink,
           link:socialtiktoklink?.link,
-          social_type:socialtiktoklink?.link
+          social_type:"tiktok"
         }
       }
       newsocialLinks?.push(facebooklink,twitterlink,instagramlink,tiktoklink)
+    
       profileUpdateFields.socialLinks=newsocialLinks
      
      }else{
@@ -368,10 +378,15 @@ social_type:"twitter"
         }
       });
        profileUpdateFields.socialLinks = updatedSocialLinks;
+ 
      }
 
        
+      }else{
+        profileUpdateFields.socialLinks = [];
       }
+     
+
 
       await profileModel.updateOne({ auth: req.user._id }, { $set: profileUpdateFields });
 
