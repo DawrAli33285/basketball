@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const mailmodel = require('../../models/mail/mail');
 const coachModel = require('../../models/coach/coach');
+const contactusmodel = require('../../models/contactus/contactus');
 
 
 // module.exports.createProfile = async (req, res) => {
@@ -163,15 +164,16 @@ module.exports.createProfile = async (req, res) => {
     universityName
   } = req.body;
 
+  
   const images = req.files['images'] || [];
-  const logos = req.files['logo'] || [];
-  let imagesUrls = [];
-  let logoUrls = [];
-  coach = coach?.length > 0 ? JSON.parse(coach) : ``;
 
-  if (images.length > 0 || logos.length > 0) {
+  let imagesUrls = [];
+
+  coach = coach?.length > 0 ? JSON.parse(coach) : ``;
+  if (images.length > 0 ) {
+    console.log("HERE")
     const imagesPath = "/tmp/public/files/images";
-    const files = [...images, ...logos];
+    const files = [...images];
     let filesPaths = files.map((val) => path.join(imagesPath, val.originalname));
 
     if (!fs.existsSync(imagesPath)) {
@@ -181,21 +183,21 @@ module.exports.createProfile = async (req, res) => {
     files.forEach((val, i) => {
       fs.writeFileSync(filesPaths[i], val.buffer);
     });
-
+ 
     const imageUploadPromises = images.map((file) => cloudinaryUpload(path.join(imagesPath, file.originalname)));
-    const logoUploadPromises = logos.map((file) => cloudinaryUpload(path.join(imagesPath, file.originalname)));
+    
 
     const imageUploads = await Promise.all(imageUploadPromises);
-    const logoUploads = await Promise.all(logoUploadPromises);
+ 
     imagesUrls = imageUploads.map((upload) => upload.url);
-    logoUrls = logoUploads.map((upload) => upload.url);
-
+  
     files.forEach((val, i) => {
       // fs.unlinkSync(filesPaths[i], val.buffer);
     });
   }
 
   const picture = req.files['picture'] || null;
+  
   let pictureUrl = null;
   if (picture) {
     const photosDir = "/tmp/public/files/photos";
@@ -219,22 +221,28 @@ module.exports.createProfile = async (req, res) => {
     socialLinks = socialLinks ? (typeof socialLinks === 'string' ? JSON.parse(socialLinks) : socialLinks) : [];
     stats = stats ? (typeof stats === 'string' ? JSON.parse(stats) : stats) : {};
 
-    offers = offers.map((offer, index) => ({
-      ...offer,
-      logo: logoUrls[index] || offer.logo || null
-    }));
+   
+
+// if(logoUrls[0])offers.logo=logoUrls[0]
+
+    // offers = offers.map((offer, index) => ({
+    //   ...offer,
+    //   logo: logoUrls[index] || offer.logo || null
+    // }));
 
     // Check if profile exists
+   
     let profile = await profileModel.findOne({ auth: req.user._id }).populate('player');
 
     if (profile) {
       // Update existing university
       if (universityName) {
+       
         await universityModel.updateOne({ _id: profile.player.institute }, { $set: { universityName } });
       }
-
       // Update existing player
       const playerUpdateFields = {};
+     
       if (name) playerUpdateFields.name = name;
       if (location) playerUpdateFields.location = location;
       if (position) playerUpdateFields.position = position;
@@ -262,51 +270,91 @@ module.exports.createProfile = async (req, res) => {
       if (starRating) profileUpdateFields.starRating = starRating;
       if (athleticaccomplishments) profileUpdateFields.athleticaccomplishments = athleticaccomplishments;
       if (stats) profileUpdateFields.stats = stats;
-      if (offers[0]?.type?.length > 0) profileUpdateFields.offers = offers;
+      if (offers?.status?.length > 0) profileUpdateFields.offers = offers;
       if (academics.gpa.length > 0) profileUpdateFields.academics = academics;
       if (imagesUrls.length > 0) profileUpdateFields.photos = imagesUrls;
-
       // Handle coach update
       if (coach) {
         const existingCoaches = await coachModel.find({ auth: req.user._id });
         let coachData = []; // Initialize coachData as an array
+
+let data={};
+if (coach.name) data.name = coach.name;
+if (coach.phoneNumber) data.phone = coach.phoneNumber; // Corrected to use phoneNumber
+if (coach.email) data.email = coach.email;
+if (coach.role) data.coachProgram = coach.role;
+if(coach.type)data.type=coach.type
+        // for (let i = 0; i < coach.length; i++) {
+        //   let data = {}; // Initialize data object for each coach
       
-        for (let i = 0; i < coach.length; i++) {
-          let data = {}; // Initialize data object for each coach
+        //   if (coach[i].name) data.name = coach[i].name;
+        //   if (coach[i].phoneNumber) data.phone = coach[i].phoneNumber; // Corrected to use phoneNumber
+        //   if (coach[i].email) data.email = coach[i].email;
+        //   if (coach[i].coachProgram) data.coachProgram = coach[i].coachProgram;
       
-          if (coach[i].name) data.name = coach[i].name;
-          if (coach[i].phoneNumber) data.phone = coach[i].phoneNumber; // Corrected to use phoneNumber
-          if (coach[i].email) data.email = coach[i].email;
-          if (coach[i].coachProgram) data.coachProgram = coach[i].coachProgram;
-      
-          coachData.push(data); // Push the populated data object into coachData array
-        }
-      
-        // Update each existing coach with respective data
-        for (let i = 0; i < existingCoaches.length; i++) {
-          await coachModel.updateOne({ _id: existingCoaches[i]._id }, { $set: coachData[i] });
-        }
+        //   coachData.push(data); // Push the populated data object into coachData array
+        // }
+ 
+        let updatedCoach=await coachModel.updateOne({ auth: req.user._id }, { $set: data });
+
+      // Update each existing coach with respective data
+        // for (let i = 0; i < existingCoaches.length; i++) {
+        //   await coachModel.updateOne({ _id: existingCoaches[i]._id }, { $set: coachData[i] });
+        // }
       }
       
 
       // Update socialLinks
       if (socialLinks && socialLinks.length > 0) {
+      
      if(profile.socialLinks){
       let newsocialLinks=[]
-      let facebooklink=profile.socialLinks.find(u=>u.social_type=="facebook")
-      let socialfacebooklink=socialLinks.find(u=>u.social_type=="facebook")
-      facebooklink.link=socialfacebooklink.link
-      let instagramlink=profile.socialLinks.find(u=>u.social_type=="instagram")
-      let socialinstagramlink=socialLinks.find(u=>u.social_type=="instagram")
-      instagramlink.link=socialinstagramlink.link
-      let twitterlink=profile.socialLinks.find(u=>u.social_type=="twitter")
-      let socialtwitterlink=socialLinks.find(u=>u.social_type=="twitter")
-      twitterlink.link=socialtwitterlink.link
-      let tiktoklink=profile.socialLinks.find(u=>u.social_type=="tiktok")
-      let socialtiktoklink=socialLinks.find(u=>u.social_type=="tiktok")
-      tiktoklink.link=socialtiktoklink.link
-      newsocialLinks.push(facebooklink,twitterlink,instagramlink,tiktoklink)
+      let facebooklink=profile?.socialLinks?.find(u=>u?.social_type=="facebook")
+      let socialfacebooklink=socialLinks?.find(u=>u?.social_type=="facebook")
+     if(socialfacebooklink && socialfacebooklink?.link){
+
+
+       facebooklink={
+        ...facebooklink,
+        link:socialfacebooklink?.link,
+        social_type:"facebook"
+       }
+     }
+    
+      let instagramlink=profile?.socialLinks?.find(u=>u?.social_type=="instagram")
+      let socialinstagramlink=socialLinks?.find(u=>u?.social_type=="instagram")
+     if(socialinstagramlink && socialinstagramlink?.link){
+ 
+      instagramlink={
+        ...instagramlink,
+        link:socialinstagramlink?.link,
+        social_type:"instagram"
+      }
+     }
+      
+      let twitterlink=profile?.socialLinks?.find(u=>u?.social_type=="twitter")
+      let socialtwitterlink=socialLinks?.find(u=>u?.social_type=="twitter")
+     if(socialtwitterlink && socialtwitterlink?.link){
+twitterlink={
+  ...twitterlink,
+  link:socialtwitterlink?.link,
+social_type:"twitter"
+}
+     }
+      
+      let tiktoklink=profile?.socialLinks?.find(u=>u?.social_type=="tiktok")
+      let socialtiktoklink=socialLinks?.find(u=>u?.social_type=="tiktok")
+     
+      if(socialtiktoklink && socialtiktoklink?.link){
+        tiktoklink={
+          ...tiktoklink,
+          link:socialtiktoklink?.link,
+          social_type:socialtiktoklink?.link
+        }
+      }
+      newsocialLinks?.push(facebooklink,twitterlink,instagramlink,tiktoklink)
       profileUpdateFields.socialLinks=newsocialLinks
+     
      }else{
       const currentSocialLinks = profile.socialLinks || [];
       const updatedSocialLinks = currentSocialLinks.map(currentLink => {
@@ -332,6 +380,7 @@ module.exports.createProfile = async (req, res) => {
       });
     } else {
       // Assuming universityName is used to create a university first
+    
       const university = await universityModel.create({ universityName });
 
       try {
@@ -361,13 +410,18 @@ module.exports.createProfile = async (req, res) => {
           //       auth: req.user._id
           //     });
           //   });
+     
          let coachfinal=await coachModel.create({
-              name: coach[0].name,
-              phone: coach[0].phoneNumber,
-              email: coach[0].email,
-              coachProgram: coach[0].role,
-              auth: req.user._id
+           coachProgram: coach.role,
+              name: coach.name,
+              phone: coach.phoneNumber,
+              email: coach.email,
+              auth: req.user._id,
+              type:coach?.type
             });
+          
+
+
           // Create profile linked to the created player
           profile = await profileModel.create({
             auth: req.user._id,
@@ -566,8 +620,8 @@ module.exports.getHomeData=async(req,res)=>{
   try{
 let videosData=await videoModel.find({}).limit(9)
 let newsFeedData=await newsFeedModel.find({}).limit(3)
-let playersData=await playerModel.find({}).limit(6).populate('auth')
-let classPlayers=await playerModel.find({class:'2024'}).limit(6).populate('auth')
+let playersData=await playerModel.find({}).populate('auth')
+let classPlayers=await playerModel.find({class:'2024'}).populate('auth')
 return res.status(200).json({
  videosData,
  newsFeedData,
@@ -641,31 +695,41 @@ console.log(name)
 </body>
 </html>
 `;
-const DOMAIN = "sandbox6a6c1146404048379fe04e593d00be67.mailgun.org";
-const mg = mailgun({apiKey: "fb6c7a836dd23a28c5fc1dde55a1a060-408f32f3-f5c88aff", domain: DOMAIN});
+// const DOMAIN = "sandbox6a6c1146404048379fe04e593d00be67.mailgun.org";
+// const mg = mailgun({apiKey: "fb6c7a836dd23a28c5fc1dde55a1a060-408f32f3-f5c88aff", domain: DOMAIN});
 
-const data = {
-from: "shahg33285@gmail.com",
-to: email,
-subject: "Contact Us",
-html:emailHtmlContent
-};
-mg.messages().send(data,async function (error, body) {
-  console.log(body);
-  if(!error){
-    console.log("SUCESS")
+// const data = {
+// from: "shahg33285@gmail.com",
+// to: email,
+// subject: "Contact Us",
+// html:emailHtmlContent
+// };
+// mg.messages().send(data,async function (error, body) {
+//   console.log(body);
+//   console.log(error)
+//   if(!error){
+//     console.log("SUCESS")
 
-  return res.status(200).json({
-      message:'sucess'
-  })
-  }
-  if(error){
-    console.log(error)
-  return res.status(400).json({
-      message:error
-  })
-  }
-  });
+//   return res.status(200).json({
+//       message:'sucess'
+//   })
+//   }
+//   if(error){
+//     console.log(error)
+//   return res.status(400).json({
+//       message:error
+//   })
+//   }
+//   });
+
+await contactusmodel.create({
+  name,
+  email,
+  message
+})
+res.status(200).json({
+  message:"SUCESS"
+})
 }catch(e){
   console.log(e.message);
   return res.status(500).json({

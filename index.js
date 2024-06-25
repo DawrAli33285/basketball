@@ -11,6 +11,8 @@ const videoRoutes=require('./routes/video/video')
 const subscriptionRoutes=require('./routes/subscriptions/subscriptions')
 const coachRoutes=require('./routes/coach/coach')
 const avalabilityPlayers=require('./routes/avalability players/avalabilityPlayers')
+const adminroutes=require('./routes/admin/admin')
+const testimonialroutes=require('./routes/testimonial/testimonial')
 //middlewares
 // app.use(cors())
 app.use(cors())
@@ -58,6 +60,8 @@ app.use(videoRoutes)
 app.use(coachRoutes)
 app.use(subscriptionRoutes)
 app.use(avalabilityPlayers)
+app.use(adminroutes)
+app.use(testimonialroutes)
 //mongodb connection
 connection
 

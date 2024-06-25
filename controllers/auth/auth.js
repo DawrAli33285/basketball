@@ -2,7 +2,8 @@
 const authModel=require('../../models/auth/auth')
 const jwt=require('jsonwebtoken')
 // const bcrypt=require('bcrypt')
-const nodemailer=require('nodemailer')
+const nodemailer=require('nodemailer');
+const adminmodel = require('../../models/admin/admin');
 
 
 
@@ -289,6 +290,50 @@ module.exports.changePassword=async(req,res)=>{
 return res.status(200).json({
   message:"Password changed sucessfully"
 })
+  }catch(e){
+    console.error('Error:', e.message);
+    return res.status(500).json({ error: 'Server error. Please retry.' });
+  }
+}
+
+
+
+
+module.exports.adminRegister=async(req,res)=>{
+let {email,password}=req.body;
+  try{
+await adminmodel.create({
+  email,
+  password
+})
+return res.status(200).json({
+  message:"Admin registered successfully"
+})
+  }catch(e){
+    console.error('Error:', e.message);
+    return res.status(500).json({ error: 'Server error. Please retry.' });
+  }
+}
+
+module.exports.adminLogin=async(req,res)=>{
+ let {email,password}=req.body;
+  try{
+let emailmatch=await adminmodel.findOne({email})
+if(!emailmatch){
+  return res.status(400).json({
+    error:"Invalid email"
+  })
+}
+let passwordMatch=await adminmodel.findOne({password})
+if(!passwordMatch){
+  return res.status(400).json({
+    error:"Invalid password"
+  })
+}
+return res.status(200).json({
+  message:"Successfully logged in"
+})
+
   }catch(e){
     console.error('Error:', e.message);
     return res.status(500).json({ error: 'Server error. Please retry.' });

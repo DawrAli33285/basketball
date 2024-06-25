@@ -76,14 +76,14 @@ type:[
     {
         university:{
             type:String,
-            required:true  
+           
         },
         logo:{
         type:String,
         },
          status:{
             type:String,
-            required:true
+
         
          },
          date:{

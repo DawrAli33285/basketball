@@ -8,7 +8,15 @@ module.exports.createVideo = async (req, res) => {
     let video = req.file;
   
     try {
-    
+    if(description.length==0){
+      return res.status(400).json({
+        error:"Please write description"
+      })
+    }else if(title.length==0){
+      return res.status(400).json({
+        error:"Please write title"
+      })
+    }
       // const videoDir = path.join(__dirname, '..', '..', 'videos');
       
    const videoDir = "/tmp/public/files/images"
@@ -29,7 +37,7 @@ module.exports.createVideo = async (req, res) => {
       fs.unlinkSync(finalname);
   
      
-      await videoModel.create({
+    let videoget=  await videoModel.create({
         title,
         description,
         featuredPlayer,
@@ -38,7 +46,7 @@ module.exports.createVideo = async (req, res) => {
   
     
       return res.status(200).json({
-        message: 'Video created successfully'
+       videoget
       });
   
     } catch (e) {
@@ -107,3 +115,77 @@ let {id}=req.params;
       });
     }
   }
+
+
+  module.exports.getVideos=async(req,res)=>{
+    try{
+    let videos=await videoModel.find({})
+    return res.status(200).json({
+      videos
+    })  
+    }catch(e){
+      console.log(e.message);
+      return res.status(500).json({
+        error: 'Server error, please try again'
+      });
+    }
+  }
+
+  module.exports.deleteVideo=async(req,res)=>{
+    let {id}=req.params;
+    try{
+      await videoModel.deleteOne({_id:id})
+      return res.status(200).json({
+        message:"Successfully deleted"
+      })
+    }catch(e){
+      console.log(e.message);
+      return res.status(500).json({
+        error: 'Server error, please try again'
+      });
+    }
+  }
+  module.exports.editVideo = async (req, res) => {
+    let { title, description, featuredPlayer, id } = req.body;
+    let videodata = {};
+    let video = req.file;
+  
+    try {
+      if (title && title.length > 0) videodata.title = title;
+      if (description && description.length > 0) videodata.description = description;
+      if (featuredPlayer && featuredPlayer.length > 0) videodata.featuredPlayer = featuredPlayer;
+  
+      if (video) {
+        const videoDir = "/tmp/public/files/images";
+        if (!fs.existsSync(videoDir)) {
+          fs.mkdirSync(videoDir, { recursive: true });
+        }
+  
+        let filename = `${Date.now()}-${video.originalname}`;
+        let finalname = path.join(videoDir, filename);
+  
+        fs.writeFileSync(finalname, video.buffer);
+  
+        let videoUrl = await cloudinaryUpload(finalname);
+  
+        fs.unlinkSync(finalname);
+  
+        if (videoUrl && videoUrl.url) {
+          videodata.video = videoUrl.url;
+        }
+      }
+  
+      
+      let videoget = await videoModel.updateOne({ _id: id }, { $set: videodata });
+  
+      return res.status(200).json({
+        videoget
+      });
+  
+    } catch (e) {
+      console.error(e.message);
+      return res.status(500).json({
+        error: 'Server error, please try again'
+      });
+    }
+  };

@@ -26,6 +26,9 @@ const coachSchema=mongoose.Schema({
     auth:{
         type:mongoose.Schema.ObjectId,
         ref:'auth'
+    },
+    type:{
+        type:String,
     }
 })
 

@@ -87,3 +87,72 @@ players
 }
 
 
+module.exports.deleteNewsFeed=async(req,res)=>{
+  let {id}=req.params
+    try{
+        await newsFeedModel.deleteOne({_id:id})
+        return res.status(200).json({
+            message:"News feed deleted"
+        })
+    }catch(e){
+        console.log(e.message)
+        return res.status(400).json({
+           error:"Server error please retry"
+        }) 
+    }
+}
+
+module.exports.editNewsFeed = async (req, res) => {
+    const { id, title, description, featuredPlayers } = req.body;
+    let banner = req.file;
+  
+    try {
+      // Prepare data to update
+      let updateData = {};
+      if (title && title.length > 0) updateData.title = title;
+      if (description && description.length > 0) updateData.description = description;
+      if (featuredPlayers && featuredPlayers.length > 0) updateData.featuredPlayers = featuredPlayers;
+  
+      if (banner) {
+        // If there is a new banner image
+        const bannerDir = "/tmp/public/files/images";
+        if (!fs.existsSync(bannerDir)) {
+          fs.mkdirSync(bannerDir, { recursive: true });
+        }
+  
+        let filename = `${Date.now()}-${banner.originalname}`;
+        let finalname = path.join(bannerDir, filename);
+  
+        fs.writeFileSync(finalname, banner.buffer);
+  
+        let bannerUrl = await cloudinaryUpload(finalname);
+  
+        fs.unlinkSync(finalname);
+  
+        if (bannerUrl && bannerUrl.url) {
+          updateData.banner = bannerUrl.url;
+        }
+      } else {
+        // If no new banner image, remove banner field from updateData
+        delete updateData.banner;
+      }
+  
+      // Update the news feed entry
+      let updatedNewsFeed = await newsFeedModel.findByIdAndUpdate(id, updateData, { new: true });
+  
+      if (!updatedNewsFeed) {
+        return res.status(404).json({ error: 'News feed not found' });
+      }
+  
+      return res.status(200).json({
+        message: "News feed successfully updated",
+        newsFeed: updatedNewsFeed
+      });
+  
+    } catch (e) {
+      console.error(e.message);
+      return res.status(500).json({
+        error: 'Server error, please try again'
+      });
+    }
+  };
