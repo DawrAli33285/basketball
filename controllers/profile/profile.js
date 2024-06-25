@@ -309,11 +309,11 @@ if(coach.type)data.type=coach.type
 
       let number=socialLinks?.find(u=>u?.social_type=="phoneNumber")
      socialLinks=socialLinks?.filter(u=>u?.social_type!="phoneNumber")
-      if(number){
-        await authmodel.updateOne({_id:req.user._id},{$set:{phoneNumber:number.link}})
-      }else if(name){
-        await authmodel.updateOne({_id:req.user._id},{$set:{name}})
-      }
+     let authdata={}
+  if(number)authdata.phoneNumber=number.link
+  if(name)authdata.name=name
+  console.log(authdata)
+  await authmodel.updateOne({_id:req.user._id},{$set:authdata})
 
   
       if (socialLinks && socialLinks.length > 0) {
