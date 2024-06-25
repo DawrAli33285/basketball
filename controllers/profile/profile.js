@@ -148,7 +148,7 @@ module.exports.createProfile = async (req, res) => {
     about,
     phoneNumber,
     jerseyNumber,
-    birthPlace,
+    birthPlace, 
     starRating,
     athleticaccomplishments,
     name,
@@ -311,6 +311,8 @@ if(coach.type)data.type=coach.type
      socialLinks=socialLinks?.filter(u=>u?.social_type!="phoneNumber")
       if(number){
         await authmodel.updateOne({_id:req.user._id},{$set:{phoneNumber:number.link}})
+      }else if(name){
+        await authmodel.updateOne({_id:req.user._id},{$set:{name}})
       }
 
   
