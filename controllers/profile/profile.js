@@ -318,7 +318,7 @@ if(coach.type)data.type=coach.type
      
      if(profile.socialLinks){
       let newsocialLinks=[]
-      let facebooklink=profile?.socialLinks?.find(u=>u?.social_type=="facebook")
+      let facebooklink;
       let socialfacebooklink=socialLinks?.find(u=>u?.social_type=="facebook")
      if(socialfacebooklink && socialfacebooklink?.link){
 
@@ -330,18 +330,20 @@ if(coach.type)data.type=coach.type
        }
      }
     
-      let instagramlink=profile?.socialLinks?.find(u=>u?.social_type=="instagram")
+      let instagramlink;
       let socialinstagramlink=socialLinks?.find(u=>u?.social_type=="instagram")
-     if(socialinstagramlink && socialinstagramlink?.link){
- 
+
+      if(socialinstagramlink && socialinstagramlink?.link){
+
       instagramlink={
     
         link:socialinstagramlink?.link,
         social_type:"instagram"
       }
+     
      }
       
-      let twitterlink=profile?.socialLinks?.find(u=>u?.social_type=="twitter")
+      let twitterlink;
       let socialtwitterlink=socialLinks?.find(u=>u?.social_type=="twitter")
      if(socialtwitterlink && socialtwitterlink?.link){
 twitterlink={
@@ -352,7 +354,7 @@ social_type:"twitter"
      }
       
  
-      let tiktoklink=profile?.socialLinks?.find(u=>u?.social_type=="tiktok")
+      let tiktoklink;
       let socialtiktoklink=socialLinks?.find(u=>u?.social_type=="tiktok")
      
       if(socialtiktoklink && socialtiktoklink?.link){
@@ -361,9 +363,10 @@ social_type:"twitter"
           social_type:"tiktok"
         }
       }
+
       newsocialLinks?.push(facebooklink,twitterlink,instagramlink,tiktoklink)
-    
       profileUpdateFields.socialLinks=newsocialLinks
+  
      
      }else{
       const currentSocialLinks = profile.socialLinks || [];
