@@ -1,7 +1,8 @@
 const videoModel=require('../../models/video/video')
 const playersModel=require('../../models/player/player')
 const coachModel=require('../../models/coach/coach')
-let authModel=require('../../models/auth/auth')
+let authModel=require('../../models/auth/auth');
+const subscriptionmodel = require('../../models/subscription/subscription');
 module.exports.dashboard = async (req, res) => {
     try {
 let totalCoaches=await coachModel.find({}).count();
@@ -43,18 +44,23 @@ let totalusers=await authModel.find({}).count()
           $sort: { '_id.year': 1, '_id.month': 1 }
         }
       ]);
-  
+
+      
+
 
       const userMonthlyCounts = users.map(item => ({
         month: item._id.month,
         year: item._id.year,
         count: item.count
       }));
+let subscribers=await subscriptionmodel.find({}).count()
+
       res.status(200).json({
         monthlyCounts,
         totalCoaches,
         totalPlayers,
         totalusers,
+        subscribers,
         userMonthlyCounts
       });
     } catch (e) {
