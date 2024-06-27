@@ -78,7 +78,7 @@ const emailHtmlContent = `
   </div>
   <div>
    <p>Please click on the link to verify email</p>
-   <a href="https://dawar.vercel.app/verify/${jwtToken}">https://dawar.vercel.app/verify/${jwtToken}</a>
+   <a href="http://127.0.0.1:5000/verify/${jwtToken}">http://127.0.0.1:5000/verify/${jwtToken}</a>
   </div>
 </div>
 
@@ -127,7 +127,7 @@ module.exports.emailVerification=async(req,res)=>{
 let {token}=req.params;
   try{
 let userData=await jwt.verify(token,process.env.JWT_TOKEN)
-console.log(userData)
+
 
 await authModel.create({
   email:userData.email,
@@ -334,6 +334,36 @@ if(!passwordMatch){
 return res.status(200).json({
   message:"Successfully logged in"
 })
+
+  }catch(e){
+    console.error('Error:', e.message);
+    return res.status(500).json({ error: 'Server error. Please retry.' });
+  }
+}
+
+
+
+
+module.exports.addRemoveFavourites=async(req,res)=>{
+let {id}=req.body;
+  try{
+let alreadyFavourite=await authModel.find({favouritePlayers:id})
+if(alreadyFavourite){
+await authModel.updateOne({_id:req.user._id},{$set:{
+  $pull:{favouritePlayers:id}
+}})
+return res.status(200).json({
+  message:"Favourite player removed"
+})
+
+}else{
+  await authModel.updateOne({_id:req.user._id},{$set:{
+    $push:{favouritePlayers:id}
+  }})
+  return res.status(200).json({
+    message:"Favourite player added"
+  })
+}
 
   }catch(e){
     console.error('Error:', e.message);

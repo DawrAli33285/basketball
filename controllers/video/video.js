@@ -179,7 +179,7 @@ let {id}=req.params;
       let videoget = await videoModel.updateOne({ _id: id }, { $set: videodata });
   
       return res.status(200).json({
-        videoget
+        videodata
       });
   
     } catch (e) {
