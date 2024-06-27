@@ -1,12 +1,20 @@
 
+const authmodel = require('../../models/auth/auth')
 let newsFeedModel=require('../../models/news feed/newsFeed')
 const playerModel = require('../../models/player/player')
 const {cloudinaryUpload}=require('../../utils/cloudinary')
+const mongoose=require('mongoose')
 const fs=require('fs')
 const path=require('path')
 module.exports.createNewsFeed=async(req,res)=>{
     let {title,description,featuredPlayers}=req.body
+
     let banner = req.file;
+ 
+      featuredPlayers = featuredPlayers.split(',').map(id => id.trim());
+ 
+console.log(featuredPlayers)
+
     try{
         const bannerDir = "/tmp/public/files/images"
         if (!fs.existsSync(bannerDir)) {
@@ -24,7 +32,7 @@ module.exports.createNewsFeed=async(req,res)=>{
       
          
           fs.unlinkSync(finalname);
-      
+   
  await newsFeedModel.create({
     title,
     description,
@@ -103,14 +111,16 @@ module.exports.deleteNewsFeed=async(req,res)=>{
 }
 
 module.exports.editNewsFeed = async (req, res) => {
-    const { id, title, description, featuredPlayers } = req.body;
+    let { id, title, description, featuredPlayers } = req.body;
     let banner = req.file;
   
     try {
       // Prepare data to update
+      
       let updateData = {};
       if (title && title.length > 0) updateData.title = title;
       if (description && description.length > 0) updateData.description = description;
+      if(featuredPlayers && featuredPlayers.length>0)featuredPlayers = featuredPlayers.split(',').map(id => id.trim());
       if (featuredPlayers && featuredPlayers.length > 0) updateData.featuredPlayers = featuredPlayers;
   
       if (banner) {
@@ -156,3 +166,19 @@ module.exports.editNewsFeed = async (req, res) => {
       });
     }
   };
+
+
+
+  module.exports.getPlayers=async(req,res)=>{
+    try{
+      let players = await authmodel.find({})
+      return res.status(200).json({
+        players
+      })
+    }catch(error){  
+      console.error(error.message);
+      return res.status(500).json({
+        error: 'Server error, please try again'
+      });
+    }
+  }

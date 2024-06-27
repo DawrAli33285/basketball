@@ -122,7 +122,7 @@ academics:{
         },
         ncaaId:{
             type:String,
-            required:true 
+         
         }
         
     }]

@@ -12,6 +12,7 @@ const mailmodel = require('../../models/mail/mail');
 const coachModel = require('../../models/coach/coach');
 const contactusmodel = require('../../models/contactus/contactus');
 const authmodel = require('../../models/auth/auth');
+const testimonialmodel = require('../../models/testimonial/testimonial');
 
 
 // module.exports.createProfile = async (req, res) => {
@@ -642,11 +643,13 @@ let videosData=await videoModel.find({}).limit(9)
 let newsFeedData=await newsFeedModel.find({}).limit(3)
 let playersData=await playerModel.find({}).populate('auth')
 let classPlayers=await playerModel.find({class:'2024'}).populate('auth')
+let testimonial=await testimonialmodel.find({})
 return res.status(200).json({
  videosData,
  newsFeedData,
  playersData,
- classPlayers
+ classPlayers,
+ testimonial
 
 })
   }catch(e){

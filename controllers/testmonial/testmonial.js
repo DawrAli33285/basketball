@@ -1,5 +1,7 @@
 const testimonialmodel=require('../../models/testimonial/testimonial')
-
+const fs=require('fs')
+const path=require('path')
+const {cloudinaryUpload}=require('../../utils/cloudinary')
 module.exports.createTestimonial=async(req,res)=>{
 let {name,testimonial}=req.body;
 let image=req.file;
@@ -42,6 +44,7 @@ let image=req.file;
 
 module.exports.editTestimonial = async (req, res) => {
     const { id, name, testimonial } = req.body;
+   
     let image = req.file;
   
     try {
@@ -111,5 +114,19 @@ return res.status(200).json({
         return res.status(500).json({
           error: 'Server error, please try again'
         });
+    }
+  }
+
+  module.exports.getTestimonials=async(req,res)=>{
+    try{
+let testimonialData=await testimonialmodel.find({})
+return res.status(200).json({
+  testimonialData
+})
+    }catch(e){
+      console.error(e.message);
+      return res.status(500).json({
+        error: 'Server error, please try again'
+      });
     }
   }

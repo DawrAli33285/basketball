@@ -8,6 +8,6 @@ router.get('/updateViews/:id/:userid',updateViews)
 router.get('/getVideos',getVideos)
 router.get('/flag-video/:id',authenticate,flagVideo)
 router.delete('/delete-video/:id',deleteVideo)
-router.post('/editVideo',editVideo)
+router.post('/editVideo',multerStorage.single('video'),editVideo)
 
 module.exports=router;

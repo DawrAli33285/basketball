@@ -1,6 +1,7 @@
 //imports
 const express=require('express')
 const app=express();
+const bodyParser = require('body-parser');
 const connection=require('./connection/connection')
 const cors=require('cors')
 require('dotenv').config();
@@ -30,6 +31,7 @@ app.options('*',cors({
 //     next();
 // });
 
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*'); 
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -37,8 +39,14 @@ app.use((req, res, next) => {
     next();
   });
   
-app.use(express.json({
-    verify: (req, res, buffer) => req['rawBody'] = buffer, 
+// app.use(express.json({
+//     verify: (req, res, buffer) => req['rawBody'] = buffer, 
+//   }));
+  
+app.use(bodyParser.json({
+    verify: (req, res, buffer) => {
+      req.rawBody = buffer;
+    },
   }));
   
 app.use(express.urlencoded({

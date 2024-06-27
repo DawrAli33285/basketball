@@ -22,6 +22,13 @@ email:{
 password:{
     type:String,
     required:true
+},
+favouritePlayers:[{
+    type:mongoose.Schema.ObjectId,
+    ref:'auth'
+}],
+role:{
+    type:String,
 }
 },{
     timestamps:true

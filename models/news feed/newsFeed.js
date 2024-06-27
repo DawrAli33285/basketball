@@ -9,13 +9,12 @@ const newsFeedSchema=mongoose.Schema({
             type:String,
             required:true
         },
-        featuredPlayers:{
-            type:[{
+        featuredPlayers:[{
                 type:mongoose.Schema.ObjectId,
                 ref:'auth'
             }],
 
-        },
+
         banner:{
             type:String,
             required:true

@@ -7,7 +7,7 @@ ref:'auth'
     },
 starRating:{
     type:Number,
-    default:0
+    default:1
 },
 picture:{
     type:String,

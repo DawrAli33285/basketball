@@ -17,4 +17,4 @@ const testimonialSchema=mongoose.Schema({
 })
 
 const testimonialmodel=mongoose.model('testimonial',testimonialSchema)
-module.exports.testimonialmodel
+module.exports=testimonialmodel

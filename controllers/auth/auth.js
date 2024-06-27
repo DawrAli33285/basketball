@@ -8,7 +8,7 @@ const adminmodel = require('../../models/admin/admin');
 
 
 module.exports.register=async(req,res)=>{
-let {email,password,firstName,lastName,phoneNumber}=req.body;
+let {email,password,firstName,lastName,phoneNumber,role}=req.body;
     try{
 
 
@@ -18,15 +18,15 @@ if(alreadyExists){
     error:"Email already exists"
     })
 }
-if(email.length==0 || password.length==0 || firstName.length==0 || phoneNumber.length==0 || lastName.length==0){
+if(email.length==0 || password.length==0 || firstName.length==0 || role.length==0 || phoneNumber.length==0 || lastName.length==0){
   return res.status(400).json({
-    message:"Please provide email,password,firstName,lastName,phoneNumber"
+    message:"Please provide email,password,firstName,lastName,phoneNumber,role"
   })
 }
 
 // let hashedPassword=await bcrypt.hash(password,10)
 
-let jwtToken=await jwt.sign({email,password,firstName,lastName,phoneNumber},process.env.JWT_TOKEN,{expiresIn:'15m'})
+let jwtToken=await jwt.sign({email,password,firstName,lastName,phoneNumber,role},process.env.JWT_TOKEN,{expiresIn:'15m'})
 const emailHtmlContent = `
 <!DOCTYPE html>
 <html>
@@ -133,6 +133,7 @@ await authModel.create({
   email:userData.email,
   name:userData.firstName+' '+userData.lastName,
   phoneNumber:userData.phoneNumber,
+  role:userData.role,
   password:userData.password
 })
 return res.status(200).json({
