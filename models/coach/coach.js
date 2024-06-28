@@ -21,7 +21,6 @@ const coachSchema=mongoose.Schema({
     },
     coachProgram:{
         type:String,
-        required:true
     },
     auth:{
         type:mongoose.Schema.ObjectId,
