@@ -244,7 +244,7 @@ module.exports.forgetPassword = async (req, res) => {
     <p>You requested a password reset. Please click on the link below to reset your password:</p>
   </div>
   <div>
-   <p><a href="http://localhost:5173/change-password/${token}">Reset Password</a></p>
+   <p><a href="https://dawar.vercel.app/change-password/${token}">Reset Password</a></p>
   </div>
 </div>
 
