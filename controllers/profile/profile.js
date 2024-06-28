@@ -297,6 +297,9 @@ if(coach.type)data.type=coach.type
         //   coachData.push(data); // Push the populated data object into coachData array
         // }
  
+     
+        let findcoach=await coachModel.findOne({auth:req.user._id})
+       
         let updatedCoach=await coachModel.updateOne({ auth: req.user._id }, { $set: data });
 
       // Update each existing coach with respective data
@@ -392,7 +395,6 @@ social_type:"twitter"
         profileUpdateFields.socialLinks = [];
       }
      
-
 
       await profileModel.updateOne({ auth: req.user._id }, { $set: profileUpdateFields });
 
@@ -491,38 +493,52 @@ social_type:"twitter"
   }
 };
 module.exports.getProfile = async (req, res) => {
-    const { id } = req.params;
-  
-    try {
-      let profile = await profileModel.findOne({ auth: id })
-        .populate({
-          path: 'player',
-          populate: {
-            path: 'institute',
-            model: 'university'
-          }
-        })
-        .populate('auth')
-        .populate('coach');
-        let players=await playerModel.find({auth:profile.auth}).populate('institute').populate('auth')
-  let showPlayers=await playerModel.find({auth:{$ne:id}}).populate('institute').populate('auth')
-let videoData=await videoModel.find({featuredPlayer:id})
+  const { id } = req.params;
 
-let newsFeedData = await newsFeedModel.find({});
-newsFeedData=newsFeedData.filter(u=>u?.featuredPlayers?.find(u=>u==id))
+  try {
+      // Fetch profile with all necessary populated fields
+      let profilePromise = profileModel.findOne({ auth: id })
+          .populate({
+              path: 'player',
+              populate: {
+                  path: 'institute',
+                  model: 'university'
+              }
+          })
+          .populate('auth')
+          .populate('coach');
 
+      // Fetch players associated with the profile's auth
+      let playersPromise = playerModel.find({ auth: id }).populate('institute').populate('auth');
+
+      // Fetch other players excluding the current profile's auth
+      let showPlayersPromise = playerModel.find({ auth: { $ne: id } }).populate('institute').populate('auth');
+
+      // Fetch videos featuring the current profile
+      let videoDataPromise = videoModel.find({ featuredPlayer: id });
+
+      // Fetch news feed data filtering by featured players including the current profile
+      let newsFeedDataPromise = newsFeedModel.find({ 'featuredPlayers': id });
+
+      // Wait for all promises to resolve
+      let [profile, players, showPlayers, videoData, newsFeedData] = await Promise.all([
+          profilePromise,
+          playersPromise,
+          showPlayersPromise,
+          videoDataPromise,
+          newsFeedDataPromise
+      ]);
 
       if (!profile) {
-        return res.status(404).json({
-          error: "Profile not found"
-        });
+          return res.status(404).json({
+              error: "Profile not found"
+          });
       }
-  
-  
+
+      // Calculate career stats
       const careerStats = {
-        
           stats: 'career',
-          gp: 0,
+          gp: profile.stats.length || 0,
           fg: 0,
           threep: 0,
           ft: 0,
@@ -533,10 +549,9 @@ newsFeedData=newsFeedData.filter(u=>u?.featuredPlayers?.find(u=>u==id))
           pf: 0,
           to: 0,
           pts: 0
-        
       };
-  
-     
+
+      // Aggregate stats
       if (profile.stats.length === 0) {
         careerStats.stats.gp = 0;
         careerStats.stats.fg = 0;
@@ -565,26 +580,30 @@ newsFeedData=newsFeedData.filter(u=>u?.featuredPlayers?.find(u=>u==id))
           careerStats.stats.pts += stat.pts;
         });
       }
-  let newprofile={
-    ...profile.toObject(),
-    videoData,
-    newsFeedData
-  }
-  newprofile.stats.push(careerStats)
-profile=newprofile
+      // Append career stats to profile
+      let newProfile = {
+          ...profile.toObject(),
+          videoData,
+          newsFeedData,
+          stats: [careerStats, ...profile.stats] // Ensure careerStats is added first
+      };
+
+     
       return res.status(200).json({
-        profile,
-        players,
-        showPlayers
+          profile: newProfile,
+          players,
+          showPlayers
       });
-  
-    } catch (e) {
+
+  } catch (e) {
       console.error(e.message);
       return res.status(500).json({
-        error: 'Server error. Please retry.'
+          error: 'Server error. Please retry.'
       });
-    }
-  };
+  }
+};
+
+
 module.exports.deleteProfile=async(req,res)=>{
     const {id}=req.params;
     try{

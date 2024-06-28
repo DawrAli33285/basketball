@@ -133,6 +133,7 @@ let {id}=req.params;
 
   module.exports.deleteVideo=async(req,res)=>{
     let {id}=req.params;
+    console.log(id)
     try{
       await videoModel.deleteOne({_id:id})
       return res.status(200).json({

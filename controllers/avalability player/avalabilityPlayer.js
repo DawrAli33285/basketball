@@ -12,7 +12,7 @@ module.exports.getPlayers=async(req,res)=>{
         let players = await playerModel.find({}).populate('institute').populate('auth');
         let profiles = await profileModel.find({});
         let videos=await videoModel.find({})
-    
+        let news=await newsFeedModel.find({})    
       
         let profileMap = new Map();
         profiles.forEach(profile => {
@@ -33,7 +33,8 @@ module.exports.getPlayers=async(req,res)=>{
     
         return res.status(200).json({
           players,
-          videos
+          videos,
+          news
         });
       } catch (e) {
         console.log(e.message);
