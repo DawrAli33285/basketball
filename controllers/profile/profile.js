@@ -601,13 +601,13 @@ module.exports.getProfile = async (req, res) => {
           fg:Number( profile.stats.fg) || 0,
           threep: Number(profile.stats.threep),
           ft:Number(profile.stats.ft) || 0,
-          reb: 0,
-          ast: 0,
-          blk: 0,
-          stl: 0,
-          pf: 0,
-          to: 0,
-          pts: 0
+          reb: Number(profile.stats.reb) || 0,
+          ast: Number(profile.stats.ast) || 0,
+          blk: Number(profile.stats.blk) || 0,
+          stl: Number(profile.stats.stl) || 0,
+          pf: Number(profile.stats.pf) || 0,
+          to: Number(profile.stats.to) || 0,
+          pts: Number(profile.stats.pts) || 0
         };
  
       // Object.values(profile.stats).forEach(stat => {

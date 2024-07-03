@@ -165,6 +165,7 @@ module.exports.createProfile = async (req, res) => {
         if (academics[0].gpa.length > 0) profileUpdateFields.academics = academics;
       
         // Handle coach update
+       
         if (coach) {
           const existingCoaches = await coachModel.find({ auth: id});
           let coachData = []; // Initialize coachData as an array
@@ -357,6 +358,8 @@ module.exports.createProfile = async (req, res) => {
               academics,
              
             });
+            console.log("PROFILE")
+            console.log(profile)
   
             // Create coaches
    
