@@ -4,6 +4,7 @@ const jwt=require('jsonwebtoken')
 // const bcrypt=require('bcrypt')
 const nodemailer=require('nodemailer');
 const adminmodel = require('../../models/admin/admin');
+const playerModel = require('../../models/player/player');
 
 
 
@@ -340,33 +341,37 @@ return res.status(200).json({
     return res.status(500).json({ error: 'Server error. Please retry.' });
   }
 }
+module.exports.addRemoveFavourites = async (req, res) => {
+  let { id } = req.params;
 
+  try {
+    let player = await playerModel.findOne({ _id: id });
 
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
 
+    let alreadyFavourite = player.favouriteBy.includes(req.user._id);
 
-module.exports.addRemoveFavourites=async(req,res)=>{
-let {id}=req.body;
-  try{
-let alreadyFavourite=await authModel.find({favouritePlayers:id})
-if(alreadyFavourite){
-await authModel.updateOne({_id:req.user._id},{$set:{
-  $pull:{favouritePlayers:id}
-}})
-return res.status(200).json({
-  message:"Favourite player removed"
-})
-
-}else{
-  await authModel.updateOne({_id:req.user._id},{$set:{
-    $push:{favouritePlayers:id}
-  }})
-  return res.status(200).json({
-    message:"Favourite player added"
-  })
-}
-
-  }catch(e){
+    if (alreadyFavourite) {
+      await playerModel.updateOne(
+        { _id: id },
+        { $pull: { favouriteBy: req.user._id } }
+      );
+      return res.status(200).json({
+        message: "Favourite player removed"
+      });
+    } else {
+      await playerModel.updateOne(
+        { _id: id },
+        { $push: { favouriteBy: req.user._id } }
+      );
+      return res.status(200).json({
+        message: "Favourite player added"
+      });
+    }
+  } catch (e) {
     console.error('Error:', e.message);
     return res.status(500).json({ error: 'Server error. Please retry.' });
   }
-}
+};

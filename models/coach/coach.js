@@ -3,7 +3,7 @@ const mongoose=require('mongoose')
 const coachSchema=mongoose.Schema({
     name:{
         type:String,
-        required:true
+       
     },
     phone:{
         type:String,
@@ -17,7 +17,7 @@ const coachSchema=mongoose.Schema({
     },
     email:{
         type:String,
-        required:true
+    
     },
     coachProgram:{
         type:String,

@@ -48,6 +48,17 @@ birthPlace:{
 },
 remarks:{
     type:String,
+},
+favouriteBy:[{
+    type:mongoose.Schema.ObjectId,
+    ref:'auth'
+}],
+status:{
+    type:String,
+    default:"pending"
+},
+previousCoachName:{
+    type:String
 }
 },{timestamps:true})
 

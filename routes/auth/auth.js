@@ -9,6 +9,6 @@ router.post('/forgetPassword',forgetPassword)
 router.post('/changePassword',changePassword)
 router.post('/adminRegister',adminRegister)
 router.post('/adminLogin',adminLogin)
-router.post('/addRemoveFavourites',authenticate,addRemoveFavourites)
+router.get('/addRemoveFavourites/:id',authenticate,addRemoveFavourites)
 
 module.exports=router;

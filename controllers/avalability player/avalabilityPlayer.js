@@ -10,6 +10,7 @@ module.exports.getPlayers=async(req,res)=>{
     try {
       
         let players = await playerModel.find({}).populate('institute').populate('auth');
+     
         let profiles = await profileModel.find({});
         let videos=await videoModel.find({})
         let news=await newsFeedModel.find({})    
@@ -30,7 +31,7 @@ module.exports.getPlayers=async(req,res)=>{
           }
           return player;
         });
-    
+
         return res.status(200).json({
           players,
           videos,

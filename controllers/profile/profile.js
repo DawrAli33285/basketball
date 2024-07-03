@@ -144,6 +144,22 @@ const testimonialmodel = require('../../models/testimonial/testimonial');
 //     }
 // };
 
+module.exports.updateStatus=async(req,res)=>{
+ let {status,id}=req.body;
+  try{
+await playerModel.updateOne({_id:id},{$set:{status}})
+return res.status(200).json({
+  messages:"SUCESS"
+})
+  }catch(error){
+   return res.status(400).json({
+      error:"Server error please try again"
+    })
+  }
+}
+
+
+
 module.exports.createProfile = async (req, res) => {
   let {
     about,
@@ -536,7 +552,7 @@ module.exports.getProfile = async (req, res) => {
       }
 
       // Calculate career stats
-      const careerStats = {
+      let careerStats = {
           stats: 'career',
           gp: profile.stats.length || 0,
           fg: 0,
@@ -565,29 +581,58 @@ module.exports.getProfile = async (req, res) => {
         careerStats.stats.to = 0;
         careerStats.stats.pts = 0;
       } else {
-       
-        profile.stats.forEach(stat => {
-          careerStats.stats.gp++;
-          careerStats.stats.fg += stat.fg;
-          careerStats.stats.threep += stat.threep;
-          careerStats.stats.ft += stat.ft;
-          careerStats.stats.reb += stat.reb;
-          careerStats.stats.ast += stat.ast;
-          careerStats.stats.blk += stat.blk;
-          careerStats.stats.stl += stat.stl;
-          careerStats.stats.pf += stat.pf;
-          careerStats.stats.to += stat.to;
-          careerStats.stats.pts += stat.pts;
-        });
+        console.log(profile.stats)
+        // Object.entries(profile.stats).forEach(([key, stat]) => {
+        //   careerStats.gp++;
+        //   careerStats.fg += profile.stats[key]?.fg || 0;
+        //   careerStats.threep += profile.stats[key]?.threep || 0;
+        //   careerStats.ft += profile.stats[key]?.ft || 0;
+        //   careerStats.stats.reb += stat?.reb || 0;
+        //   careerStats.stats.ast += stat?.ast || 0;
+        //   careerStats.stats.blk += stat?.blk || 0;
+        //   careerStats.stats.stl += stat?.stl || 0;
+        //   careerStats.stats.pf += stat?.pf || 0;
+        //   careerStats.stats.to += stat?.to || 0;
+        //   careerStats.stats.pts += stat?.pts || 0;
+        // });
+        careerStats = {
+          stats: 'career',
+          gp: Number(profile.stats.gp )|| 0,
+          fg:Number( profile.stats.fg) || 0,
+          threep: Number(profile.stats.threep),
+          ft:Number(profile.stats.ft) || 0,
+          reb: 0,
+          ast: 0,
+          blk: 0,
+          stl: 0,
+          pf: 0,
+          to: 0,
+          pts: 0
+        };
+ 
+      // Object.values(profile.stats).forEach(stat => {
+      //     careerStats?.stats?.gp++;
+      //     careerStats?.stats?.fg += stat?.fg;
+      //     careerStats?.stats?.threep += stat.threep;
+      //     careerStats?.stats?.ft += stat.ft;
+      //     careerStats?.stats?.reb += stat.reb;
+      //     careerStats?.stats?.ast += stat.ast;
+      //     careerStats?.stats?.blk += stat.blk;
+      //     careerStats?.stats?.stl += stat.stl;
+      //     careerStats?.stats?.pf += stat.pf;
+      //     careerStats?.stats?.to += stat.to;
+      //     careerStats?.stats?.pts += stat.pts;
+      //   });
       }
       // Append career stats to profile
       let newProfile = {
           ...profile.toObject(),
           videoData,
           newsFeedData,
-          stats: [careerStats, ...profile.stats] // Ensure careerStats is added first
+          stats: [careerStats] 
       };
-
+      console.log("PROFILE")
+console.log(newProfile)
      
       return res.status(200).json({
           profile: newProfile,

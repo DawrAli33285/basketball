@@ -13,7 +13,7 @@ required:true
             },
             message:props=>`${props.value} is not a valid phone number!`
         },
-        required:true
+        
     },
 email:{
     type:String,
@@ -23,10 +23,6 @@ password:{
     type:String,
     required:true
 },
-favouritePlayers:[{
-    type:mongoose.Schema.ObjectId,
-    ref:'auth'
-}],
 role:{
     type:String,
 }

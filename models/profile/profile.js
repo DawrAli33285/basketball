@@ -29,45 +29,40 @@ photos:{
     type:[String]
 },
 stats:{
-type:[{
-stats:{
-    type:String
-},
-gp:{
-    type:mongoose.Schema.Types.BigInt
-},
-fg:{
-    type:mongoose.Schema.Types.BigInt
-},
-threep:{
-    type:mongoose.Schema.Types.BigInt
-},
-ft:{
-    type:mongoose.Schema.Types.BigInt
-},
-reb:{
-    type:mongoose.Schema.Types.BigInt
-},
-ast:{
-    type:mongoose.Schema.Types.BigInt
-},
-blk:{
-    type:mongoose.Schema.Types.BigInt
-},
-stl:{
-    type:mongoose.Schema.Types.BigInt
-},
-pf:{
-    type:mongoose.Schema.Types.BigInt
-},
-to:{
-    type:mongoose.Schema.Types.BigInt
-},
-pts:{
-    type:mongoose.Schema.Types.BigInt
-}
-}]
 
+    gp:{
+        type:Number
+    },
+    fg:{
+        type:Number
+    },
+    threep:{
+        type:Number
+    },
+    ft:{
+        type:Number
+    },
+    reb:{
+        type:Number
+    },
+    ast:{
+        type:Number
+    },
+    blk:{
+        type:Number
+    },
+    stl:{
+        type:Number
+    },
+    pf:{
+        type:Number
+    },
+    to:{
+        type:Number
+    },
+    pts:{
+        type:Number 
+    }
 },
 
 
