@@ -59,7 +59,13 @@ status:{
 },
 previousCoachName:{
     type:String
-}
+},
+followedBy:[
+    {
+        type:mongoose.Schema.ObjectId,
+        ref:'auth'
+    }
+]
 },{timestamps:true})
 
 const playerModel=mongoose.model('player',playerSchema)

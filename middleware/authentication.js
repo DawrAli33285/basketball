@@ -1,7 +1,7 @@
 const jwt=require('jsonwebtoken')
 const authmodel=require('../models/auth/auth')
 module.exports.authenticate=async(req,res,next)=>{
- 
+
 let {authorization}=req.headers;
 if(!authorization){
     return res.status(400).json({
@@ -15,6 +15,7 @@ let user=jwt.verify(token,process.env.JWT_TOKEN)
 let userfound=await authmodel.findOne({email:user.email})
 if(userfound){
     req.user=user;
+   
 next();
 }else{
     return res.status(400).json({

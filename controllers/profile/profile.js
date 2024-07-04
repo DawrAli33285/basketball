@@ -694,6 +694,7 @@ module.exports.getPlayer = async (req, res) => {
 
     // Create a map for quick lookup of profiles by auth ID
     const profileMap = profiles.reduce((map, profile) => {
+
       map[profile.auth.toString()] = profile;
       return map;
     }, {});
@@ -908,6 +909,43 @@ module.exports.flagProfile = async (req, res) => {
     console.log(e.message);
     return res.status(500).json({
       error: 'Server error. Please retry.'
+    });
+  }
+};
+
+module.exports.addRemoveFollow = async (req, res) => {
+  const { id } = req.params;
+
+
+  try {
+  
+    const player = await playerModel.findOne({auth:id});
+
+    if (!player) {
+      return res.status(404).json({
+        error: 'Player not found'
+      });
+    }
+
+    const userId = req.user._id;
+    const isFollowed = player.followedBy.includes(userId);
+
+    if (isFollowed) {
+    
+      player.followedBy.pull(userId);
+    } else {
+     
+      player.followedBy.push(userId);
+    }
+
+    await player.save();
+
+    return res.status(200).json({
+      message: isFollowed ? 'User unfollowed successfully' : 'User followed successfully'
+    });
+  } catch (error) {
+    return res.status(400).json({
+      error: error.message
     });
   }
 };
