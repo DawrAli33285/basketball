@@ -8,7 +8,7 @@ const newsFeedModel=require('../../models/news feed/newsFeed')
 
 module.exports.getPlayers=async(req,res)=>{
     try {
-      
+     
         let players = await playerModel.find({}).populate('institute').populate('auth');
      
         let profiles = await profileModel.find({});

@@ -664,43 +664,57 @@ module.exports.deleteProfile=async(req,res)=>{
         });
     }
 }
+
 module.exports.getPlayer = async (req, res) => {
   try {
+    // Fetch videos
+    const videos = await videoModel.find({});
+
+    // Create a map for quick lookup of videos by player ID
+    const videoMap = new Map();
+    if (videos && videos.length > 0) {
+      videos.forEach(video => {
+        if (video.featuredPlayer) {
+          const playerId = video.featuredPlayer.toString();
+          if (!videoMap.has(playerId)) {
+            videoMap.set(playerId, []);
+          }
+          videoMap.get(playerId).push(video);
+        }
+      });
+    }
+
     // Fetch players and populate required fields
-    let players = await playerModel.find({}).populate('institute').populate('auth');
+    const players = await playerModel.find({})
+      .populate('institute')
+      .populate('auth');  
 
     // Fetch all profiles
-    let profiles = await profileModel.find({});
+    const profiles = await profileModel.find({});
 
     // Create a map for quick lookup of profiles by auth ID
-    let profileMap = new Map();
-    profiles.forEach(profile => {
-      profileMap.set(profile.auth.toString(), profile);
-    });
+    const profileMap = profiles.reduce((map, profile) => {
+      map[profile.auth.toString()] = profile;
+      return map;
+    }, {});
 
-    // Add offers to each player
-    players = players.map(player => {
+    // Add offers, profile, and videos to each player
+    const updatedPlayers = players.map(player => {
       const playerAuthId = player.auth._id.toString();
-      if (profileMap.has(playerAuthId)) {
-        player = player.toObject(); // Convert to plain object to modify
-        player.offers = profileMap.get(playerAuthId).offers || [];
-      } else {
-        player.offers = [];
-      }
+      const profile = profileMap[playerAuthId] || {};
+      player = player.toObject(); // Convert to plain object to modify
+      player.offers = profile.offers || [];
+      player.profile = profile; // Add the entire profile object
+      player.videos = videoMap.get(playerAuthId) || []; // Add videos
       return player;
     });
 
-    return res.status(200).json({
-      players
-    });
+    return res.status(200).json({ players: updatedPlayers });
   } catch (e) {
-    console.log(e.message);
-    return res.status(500).json({
-      error: 'Server error. Please retry.'
-    });
+    console.error(e.message);
+    return res.status(500).json({ error: 'Server error. Please retry.' });
   }
 };
-
 module.exports.getHomeData=async(req,res)=>{
   try{
 let videosData=await videoModel.find({}).limit(9)
