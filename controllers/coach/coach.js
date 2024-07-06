@@ -77,9 +77,17 @@ module.exports.createProfile = async (req, res) => {
       playerClass,
       universityName,
       id,
-      email
+      email,
     } = req.body;
- 
+
+let offerid=[];
+offers=JSON.parse(offers)
+offers?.map((val,i)=>{
+  if(val?.logoid!==undefined){
+offerid.push(val?.logoid)
+  }
+})
+
 
 
     coach = coach?.length > 0 ? JSON.parse(coach) : ``;
@@ -101,15 +109,56 @@ module.exports.createProfile = async (req, res) => {
       pictureUrl = photoUpload.url;
       // fs.unlinkSync(photofile);
     }
+
+
+    if (offerid && req?.files?.logo?.length > 0) {
+      const logosPath = "/tmp/public/files/logos";
+      const logoFiles = [...req.files.logo];
+
+      let logosPaths = logoFiles.map((val) => path.join(logosPath, val.originalname));
+  
+      if (!fs.existsSync(logosPath)) {
+        fs.mkdirSync(logosPath, { recursive: true });
+      }
+    
+      logoFiles.forEach((val, i) => {
+        fs.writeFileSync(logosPaths[i], val.buffer);
+      });
+   
+    console.log("LOGO CHECKS")
+      const logoUploadPromises = logoFiles.map((file) => cloudinaryUpload(path.join(logosPath, file.originalname)));
+      console.log(logoUploadPromises)
+      const logoUploads = await Promise.all(logoUploadPromises);
+      console.log(logoUploads)
+      const logoUrls = logoUploads.map((upload) => upload.url);
+
+      if (typeof offerid === 'string') {
+        const offerIndex = parseInt(offerid);
+        if (offers[offerIndex]) {
+          offers[offerIndex].logo = logoUrls[0] || null; // Assuming only one logo is uploaded for a single offerid
+        }
+      } else if (Array.isArray(offerid)) {
+        offerid.forEach((id, index) => {
+          const offerIndex = parseInt(id);
+          if (offers[offerIndex]) {
+            offers[offerIndex].logo = logoUrls[index] || null;
+          }
+        });
+      }
+    }
+  
+
     try {
       // Ensure academics, offers, socialLinks, and stats are objects
       
       academics = academics ? (typeof academics === 'string' ? JSON.parse(academics) : academics) : {};
-      offers = offers ? (typeof offers === 'string' ? JSON.parse(offers) : offers) : [];
+    offers = offers ? (typeof offers === 'string' ? JSON.parse(offers) : offers) : [];
       socialLinks = socialLinks ? (typeof socialLinks === 'string' ? JSON.parse(socialLinks) : socialLinks) : [];
-      stats = stats.length>0 ? (typeof stats === 'string' ? JSON.parse(stats) : stats) : {};
-     if(!id || id===null)id=new mongoose.Types.ObjectId();
-     
+
+    stats = stats.length>0 ? (stats!==undefined ? JSON.parse(stats) : stats) : {};
+
+    if(!id || id===null)id=new mongoose.Types.ObjectId();
+  
   // if(logoUrls[0])offers.logo=logoUrls[0]
   
       // offers = offers.map((offer, index) => ({
@@ -160,7 +209,9 @@ module.exports.createProfile = async (req, res) => {
         if (starRating) profileUpdateFields.starRating = starRating;
         if (athleticaccomplishments) profileUpdateFields.athleticaccomplishments = JSON.parse(athleticaccomplishments);
         if (stats) profileUpdateFields.stats = stats;
-        if (offers?.status?.length > 0) profileUpdateFields.offers = offers;
+        if (offers?.length>0) profileUpdateFields.offers = offers;
+       console.log(profileUpdateFields)
+      
        
         if (academics[0].gpa.length > 0) profileUpdateFields.academics = academics;
       
@@ -286,7 +337,7 @@ module.exports.createProfile = async (req, res) => {
           profileUpdateFields.socialLinks = [];
         }
        
-  
+
         await profileModel.updateOne({ auth: id }, { $set: profileUpdateFields });
   
         return res.status(200).json({
@@ -358,7 +409,7 @@ module.exports.createProfile = async (req, res) => {
               academics,
              
             });
-            console.log("PROFILE")
+            console.log("PROFILE created is")
             console.log(profile)
   
             // Create coaches

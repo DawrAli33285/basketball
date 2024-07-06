@@ -5,6 +5,7 @@ router.post('/create-coach',createCoach)
 router.get('/getNews',getNews)
 router.post('/create-player',multerStorage.fields([
     {name:'picture',maxCount:1},
+    {name:'logo'}
 ]),createProfile)
 router.get('/getPlayersAdmin',getPlayers)
 router.get('/removePlayer/:id',removePlayer)

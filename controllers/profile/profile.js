@@ -179,9 +179,20 @@ module.exports.createProfile = async (req, res) => {
     stats,
     academics,
     playerClass,
-    universityName
+    universityName,
+    
   } = req.body;
+let offerid=[]
+offers=JSON.parse(offers)
+console.log(offers)
+offers.forEach((val, i) => {
+  if (val?.logoid !== undefined) { // Ensure 'logoid' is defined and not null
+    offerid.push(val.logoid); // Push 'logoid' into 'offerid' array
+  }
+});
+console.log("OFFERID")
 
+console.log(offerid)
   
   const images = req.files['images'] || [];
 
@@ -231,6 +242,39 @@ module.exports.createProfile = async (req, res) => {
     pictureUrl = photoUpload.url;
     // fs.unlinkSync(photofile);
   }
+
+  if (offerid && req?.files?.logo?.length > 0) {
+    const logosPath = "/tmp/public/files/logos";
+    const logoFiles = [...req.files.logo];
+    let logosPaths = logoFiles.map((val) => path.join(logosPath, val.originalname));
+  
+    if (!fs.existsSync(logosPath)) {
+      fs.mkdirSync(logosPath, { recursive: true });
+    }
+  
+    logoFiles.forEach((val, i) => {
+      fs.writeFileSync(logosPaths[i], val.buffer);
+    });
+  
+    const logoUploadPromises = logoFiles.map((file) => cloudinaryUpload(path.join(logosPath, file.originalname)));
+    const logoUploads = await Promise.all(logoUploadPromises);
+    const logoUrls = logoUploads.map((upload) => upload.url);
+  
+    if (typeof offerid === 'string') {
+      const offerIndex = parseInt(offerid);
+      if (offers[offerIndex]) {
+        offers[offerIndex].logo = logoUrls[0] || null; // Assuming only one logo is uploaded for a single offerid
+      }
+    } else if (Array.isArray(offerid)) {
+      offerid.forEach((id, index) => {
+        const offerIndex = parseInt(id);
+        if (offers[offerIndex]) {
+          offers[offerIndex].logo = logoUrls[index] || null;
+        }
+      });
+    }
+  }
+  
 
   try {
     // Ensure academics, offers, socialLinks, and stats are objects
@@ -288,7 +332,7 @@ module.exports.createProfile = async (req, res) => {
       if (starRating) profileUpdateFields.starRating = starRating;
       if (athleticaccomplishments) profileUpdateFields.athleticaccomplishments = athleticaccomplishments;
       if (stats) profileUpdateFields.stats = stats;
-      if (offers?.status?.length > 0) profileUpdateFields.offers = offers;
+      if (offers) profileUpdateFields.offers = offers;
       if (academics.gpa.length > 0) profileUpdateFields.academics = academics;
       if (imagesUrls.length > 0) profileUpdateFields.photos = imagesUrls;
       // Handle coach update
@@ -313,7 +357,8 @@ if(coach.type)data.type=coach.type
         //   coachData.push(data); // Push the populated data object into coachData array
         // }
  
-     
+     console.log(profileUpdateFields)
+
         let findcoach=await coachModel.findOne({auth:req.user._id})
        
         let updatedCoach=await coachModel.updateOne({ auth: req.user._id }, { $set: data });
