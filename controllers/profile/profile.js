@@ -243,37 +243,37 @@ console.log(offerid)
     // fs.unlinkSync(photofile);
   }
 
-  if (offerid && req?.files?.logo?.length > 0) {
-    const logosPath = "/tmp/public/files/logos";
-    const logoFiles = [...req.files.logo];
-    let logosPaths = logoFiles.map((val) => path.join(logosPath, val.originalname));
+  // if (offerid && req?.files?.logo?.length > 0) {
+  //   const logosPath = "/tmp/public/files/logos";
+  //   const logoFiles = [...req.files.logo];
+  //   let logosPaths = logoFiles.map((val) => path.join(logosPath, val.originalname));
   
-    if (!fs.existsSync(logosPath)) {
-      fs.mkdirSync(logosPath, { recursive: true });
-    }
+  //   if (!fs.existsSync(logosPath)) {
+  //     fs.mkdirSync(logosPath, { recursive: true });
+  //   }
   
-    logoFiles.forEach((val, i) => {
-      fs.writeFileSync(logosPaths[i], val.buffer);
-    });
+  //   logoFiles.forEach((val, i) => {
+  //     fs.writeFileSync(logosPaths[i], val.buffer);
+  //   });
   
-    const logoUploadPromises = logoFiles.map((file) => cloudinaryUpload(path.join(logosPath, file.originalname)));
-    const logoUploads = await Promise.all(logoUploadPromises);
-    const logoUrls = logoUploads.map((upload) => upload.url);
+  //   const logoUploadPromises = logoFiles.map((file) => cloudinaryUpload(path.join(logosPath, file.originalname)));
+  //   const logoUploads = await Promise.all(logoUploadPromises);
+  //   const logoUrls = logoUploads.map((upload) => upload.url);
   
-    if (typeof offerid === 'string') {
-      const offerIndex = parseInt(offerid);
-      if (offers[offerIndex]) {
-        offers[offerIndex].logo = logoUrls[0] || null; // Assuming only one logo is uploaded for a single offerid
-      }
-    } else if (Array.isArray(offerid)) {
-      offerid.forEach((id, index) => {
-        const offerIndex = parseInt(id);
-        if (offers[offerIndex]) {
-          offers[offerIndex].logo = logoUrls[index] || null;
-        }
-      });
-    }
-  }
+  //   if (typeof offerid === 'string') {
+  //     const offerIndex = parseInt(offerid);
+  //     if (offers[offerIndex]) {
+  //       offers[offerIndex].logo = logoUrls[0] || null; // Assuming only one logo is uploaded for a single offerid
+  //     }
+  //   } else if (Array.isArray(offerid)) {
+  //     offerid.forEach((id, index) => {
+  //       const offerIndex = parseInt(id);
+  //       if (offers[offerIndex]) {
+  //         offers[offerIndex].logo = logoUrls[index] || null;
+  //       }
+  //     });
+  //   }
+  // }
   
 
   try {
